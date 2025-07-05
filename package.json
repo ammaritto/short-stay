@@ -1,3 +1,5 @@
+npm install lucide-react
+
 {
   "name": "vite-react",
   "private": true,
