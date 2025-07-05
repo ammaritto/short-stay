@@ -114,36 +114,42 @@ const App: React.FC = () => {
     }
   };
 
-  const searchAvailability = async (): Promise<void> => {
-    if (!searchParams.startDate || !searchParams.endDate) {
-      setError('Please select check-in and check-out dates');
-      return;
-    }
+const searchAvailability = async (): Promise<void> => {
+  if (!searchParams.startDate || !searchParams.endDate) {
+    setError('Please select check-in and check-out dates');
+    return;
+  }
 
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
+  
+  try {
+    const params = new URLSearchParams({
+      startDate: searchParams.startDate,
+      endDate: searchParams.endDate,
+      guests: searchParams.guests.toString()
+    });
     
-    try {
-      const params = new URLSearchParams({
-        startDate: searchParams.startDate,
-        endDate: searchParams.endDate,
-        guests: searchParams.guests.toString()
-      });
-      
-      const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setAvailability(data.data);
-      } else {
-        setError(data.error || 'Failed to search availability');
-      }
-    } catch (err) {
-      setError('Failed to connect to the server');
-    } finally {
-      setLoading(false);
+    console.log('Searching with params:', params.toString()); // Debug log
+    
+    const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
+    const data = await response.json();
+    
+    console.log('API Response:', data); // Debug log
+    
+    if (data.success) {
+      setAvailability(data.data);
+      console.log('Availability set:', data.data); // Debug log
+    } else {
+      setError(data.error || 'Failed to search availability');
     }
-  };
+  } catch (err) {
+    console.error('Search error:', err); // Debug log
+    setError('Failed to connect to the server');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleBookingSubmit = async (): Promise<void> => {
     if (!selectedUnit || !guestDetails.firstName || !guestDetails.lastName || !guestDetails.email) {
@@ -205,10 +211,11 @@ const App: React.FC = () => {
     return building ? building.name : `Building ${buildingId}`;
   };
 
-  const formatCurrency = (amount: number, currency: string = 'GBP', symbol: string = '£'): string => {
-    return `${symbol}${amount.toFixed(2)}`;
-  };
-
+const formatCurrency = (amount: number, currency: string = 'GBP', symbol: string = '£'): string => {
+  const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
+  return `${symbol}${numAmount.toFixed(2)}`;
+};
+  
   const calculateNights = (): number => {
     if (!searchParams.startDate || !searchParams.endDate) return 0;
     const start = new Date(searchParams.startDate);
