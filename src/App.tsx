@@ -382,31 +382,31 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <h1 className="text-4xl font-light text-gray-900 mb-2 text-center">Short Stay Booking</h1>
-          <p className="text-gray-600 text-center mb-8">Find your perfect studio in Stockholm</p>
+        <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+          <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-2 text-center">Short Stay Booking</h1>
+          <p className="text-gray-600 text-center mb-6 md:mb-8">Find your perfect studio in Stockholm</p>
           
           {/* Search Form */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-8 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-6">
-              <div className="w-full">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
+              <div className="w-full sm:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   <input
                     type="date"
                     value={searchParams.startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                   />
                 </div>
               </div>
               
-              <div className="w-full">
+              <div className="w-full sm:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   <input
                     type="date"
                     value={searchParams.endDate}
@@ -419,15 +419,15 @@ const App: React.FC = () => {
                       }
                     }}
                     min={getMinEndDate()}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                   />
                 </div>
               </div>
               
-              <div className="w-full">
+              <div className="w-full sm:col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
                 <div className="relative">
-                  <Users className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   <select
                     value={searchParams.guests}
                     onChange={(e) => {
@@ -438,7 +438,7 @@ const App: React.FC = () => {
                         setHasSearched(false);
                       }
                     }}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none"
                   >
                     {[1,2].map(num => (
                       <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
@@ -447,7 +447,8 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div className="w-full flex items-end">
+              <div className="w-full sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
                 <button
                   onClick={searchAvailability}
                   disabled={loading}
@@ -460,9 +461,9 @@ const App: React.FC = () => {
             </div>
             
             {/* Community Filter Buttons */}
-            <div className="border-t border-gray-100 pt-6">
+            <div className="border-t border-gray-100 pt-4 md:pt-6">
               <h3 className="text-base font-medium text-gray-800 mb-3">Filter by Community</h3>
-              <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                 {communities.map((community) => (
                   <button
                     key={community.id}
