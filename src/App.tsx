@@ -24,6 +24,7 @@ interface Unit {
   buildingName: string;
   inventoryTypeId: number;
   inventoryTypeName: string;
+  imageUrl: string;
   rates: Rate[];
 }
 
@@ -144,6 +145,23 @@ const App: React.FC = () => {
     return minDate.toISOString().split('T')[0];
   };
 
+  // Get appropriate stock image for unit type
+  const getUnitTypeImage = (unitTypeName: string): string => {
+    const unitType = unitTypeName.toLowerCase();
+    
+    if (unitType.includes('studio')) {
+      return 'photo-1522708323590-d24dbb6b0267'; // Modern studio apartment
+    } else if (unitType.includes('max')) {
+      return 'photo-1560448204-e02f11c3d0e2'; // Spacious modern apartment
+    } else if (unitType.includes('micro')) {
+      return 'photo-1554995207-c18c203602cb'; // Compact modern space
+    } else if (unitType.includes('smart')) {
+      return 'photo-1586023492125-27b2c045efd7'; // Smart modern apartment
+    } else {
+      return 'photo-1502672260266-1c1ef2d93688'; // Default apartment
+    }
+  };
+
   // Search for availability
   const searchAvailability = async (): Promise<void> => {
     console.log('Starting search...');
@@ -186,7 +204,7 @@ const App: React.FC = () => {
             buildingName: property.buildingName || 'Unknown Building',
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-            rates: shortStayRates.map((rate: any) => ({
+            imageUrl: property.imageUrl || property.mainImage || `https://images.unsplash.com/photo-${this.getUnitTypeImage(property.inventoryTypeName)}?w=800&h=400&fit=crop&crop=center`,
               rateId: rate.rateId || 0,
               rateName: rate.rateName || 'Short Stay Rate',
               currency: rate.currency || 'SEK',
@@ -385,6 +403,30 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
               {availability.map((unit) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                  {/* Image Section */}
+                  <div className="relative h-64 bg-gray-100">
+                    <img 
+                      src={unit.imageUrl} 
+                      alt={unit.inventoryTypeName}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback to default image if image fails to load
+                        e.currentTarget.src = `https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=400&fit=crop&crop=center`;
+                      }}
+                    />
+                    {/* Price overlay */}
+                    {unit.rates.length > 0 && (
+                      <div className="absolute top-4 right-4 bg-white bg-opacity-95 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+                        <p className="text-lg font-semibold text-gray-900">
+                          {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {formatCurrency(unit.rates[0].avgNightlyRate)}/night
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="p-8">
                     <div className="flex justify-between items-start mb-6">
                       <div>
