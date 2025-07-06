@@ -439,55 +439,9 @@ const App: React.FC = () => {
                       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-6">
                         <div className="flex-1">
                           <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
-                          <div className="flex items-center gap-2 text-gray-600 mb-4">
+                          <div className="flex items-center gap-2 text-gray-600 mb-6">
                             <MapPin className="h-4 w-4" />
                             <span className="text-sm">{unit.buildingName}</span>
-                          </div>
-                          
-                          {/* Studio Details Section */}
-                          <div className="mb-6">
-                            <h4 className="text-base lg:text-lg font-medium text-gray-900 mb-3">Studio details</h4>
-                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 lg:gap-3">
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">🏠</span>
-                                <span>Private</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">🛏️</span>
-                                <span>1 Room</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">📏</span>
-                                <span>Studio</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">📐</span>
-                                <span>14 Sqm</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Shared Spaces Section */}
-                          <div className="mb-6">
-                            <h4 className="text-base lg:text-lg font-medium text-gray-900 mb-3">Shared Spaces</h4>
-                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 lg:gap-3">
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">🍳</span>
-                                <span>Large Kitchen</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">💼</span>
-                                <span>Co-working Space</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">🛋️</span>
-                                <span>Living Room</span>
-                              </div>
-                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
-                                <span className="text-sm">🍽️</span>
-                                <span>Dining Room</span>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </div>
