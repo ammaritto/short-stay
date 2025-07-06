@@ -421,9 +421,9 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
               {availability.map((unit) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                  <div className="flex flex-col lg:flex-row">
+                  <div className="flex flex-col lg:flex-row h-full">
                     {/* Property Image - Top on mobile, Left on desktop */}
-                    <div className="relative w-full lg:w-80 h-64 lg:h-64 flex-shrink-0 lg:rounded-l-2xl lg:rounded-r-none rounded-t-2xl lg:rounded-t-2xl overflow-hidden">
+                    <div className="relative w-full lg:w-80 h-64 lg:h-full flex-shrink-0">
                       <img
                         src={getPropertyImage(unit.inventoryTypeId)}
                         alt={unit.inventoryTypeName}
@@ -435,14 +435,12 @@ const App: React.FC = () => {
                     </div>
                     
                     {/* Content - Bottom on mobile, Right on desktop */}
-                    <div className="flex-1 p-6 lg:p-8">
-                      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-6">
-                        <div className="flex-1">
-                          <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
-                          <div className="flex items-center gap-2 text-gray-600 mb-6">
-                            <MapPin className="h-4 w-4" />
-                            <span className="text-sm">{unit.buildingName}</span>
-                          </div>
+                    <div className="flex-1 p-6 lg:p-8 flex flex-col">
+                      <div className="flex-1">
+                        <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
+                        <div className="flex items-center gap-2 text-gray-600 mb-6">
+                          <MapPin className="h-4 w-4" />
+                          <span className="text-sm">{unit.buildingName}</span>
                         </div>
                       </div>
                       
@@ -453,8 +451,7 @@ const App: React.FC = () => {
                             <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
                               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
                                 <div className="flex-1">
-                                  <h5 className="text-base lg:text-lg font-medium text-gray-900 mb-2 lg:mb-3">{rate.rateName}</h5>
-                                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-500">
+                                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-500 mb-2">
                                     <span className="font-medium bg-gray-100 px-2 lg:px-3 py-1 rounded-full">{calculateNights()} nights</span>
                                     <span className="text-xs text-gray-400 hidden lg:inline">•</span>
                                     <span className="text-xs lg:text-sm">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
