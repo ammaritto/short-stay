@@ -316,10 +316,10 @@ const ShortStayBooking = () => {
                         {unit.rates.length > 0 && (
                           <div className="mt-1">
                             <p className="text-2xl font-bold text-green-600">
-                              {formatCurrency(unit.rates[0].totalPrice, unit.rates[0].currency, unit.rates[0].currencySymbol)}
+                              {formatCurrency(unit.rates[0]?.totalPrice || 0, unit.rates[0]?.currency, unit.rates[0]?.currencySymbol)}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {formatCurrency(unit.rates[0].avgNightlyRate, unit.rates[0].currency, unit.rates[0].currencySymbol)}/night
+                              {formatCurrency(unit.rates[0]?.avgNightlyRate || 0, unit.rates[0]?.currency, unit.rates[0]?.currencySymbol)}/night
                             </p>
                           </div>
                         )}
@@ -344,10 +344,10 @@ const ShortStayBooking = () => {
                               </div>
                               <div className="text-right ml-4">
                                 <p className="text-2xl font-bold text-green-600">
-                                  {formatCurrency(rate.totalPrice, rate.currency, rate.currencySymbol)}
+                                  {formatCurrency(rate?.totalPrice || 0, rate?.currency, rate?.currencySymbol)}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {formatCurrency(rate.avgNightlyRate, rate.currency, rate.currencySymbol)}/night
+                                  {formatCurrency(rate?.avgNightlyRate || 0, rate?.currency, rate?.currencySymbol)}/night
                                 </p>
                                 <button
                                   onClick={() => selectUnit(unit, rate)}
@@ -385,7 +385,7 @@ const ShortStayBooking = () => {
                       <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
                       <p><strong>Guests:</strong> {searchParams.guests}</p>
                       <p className="text-lg font-bold text-green-600">
-                        <strong>Total: {formatCurrency(selectedUnit.selectedRate.totalPrice, selectedUnit.selectedRate.currency, selectedUnit.selectedRate.currencySymbol)}</strong>
+                        <strong>Total: {formatCurrency(selectedUnit?.selectedRate?.totalPrice || 0, selectedUnit?.selectedRate?.currency, selectedUnit?.selectedRate?.currencySymbol)}</strong>
                       </p>
                     </div>
                   </div>
