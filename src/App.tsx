@@ -423,11 +423,11 @@ const App: React.FC = () => {
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
                   <div className="flex flex-col lg:flex-row h-full">
                     {/* Property Image - Top on mobile, Left on desktop */}
-                    <div className="relative w-full lg:w-80 h-64 lg:h-full flex-shrink-0">
+                    <div className="relative w-full lg:w-80 h-64 lg:h-full flex-shrink-0 lg:-ml-0 lg:-mt-0 lg:-mb-0">
                       <img
                         src={getPropertyImage(unit.inventoryTypeId)}
                         alt={unit.inventoryTypeName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover lg:rounded-l-2xl rounded-t-2xl lg:rounded-t-none"
                         onError={(e) => {
                           e.currentTarget.src = 'https://via.placeholder.com/320x256/e5e7eb/9ca3af?text=Photo+Coming+Soon';
                         }}
