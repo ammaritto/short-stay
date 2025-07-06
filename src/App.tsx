@@ -158,24 +158,24 @@ const App: React.FC = () => {
     
     try {
       const params = new URLSearchParams({
-        startDate: searchParams.startDate,
-        endDate: searchParams.endDate,
-        guests: searchParams.guests.toString()
+        dateFrom: searchParams.startDate,
+        dateTo: searchParams.endDate,
+        inventoryType: 'UNIT_TYPE'
       });
       
-      console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
+      console.log('Search URL:', `${API_BASE_URL}/v3/availabilities?${params}`);
       
-      const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
+      const response = await fetch(`${API_BASE_URL}/v3/availabilities?${params}`);
       const data = await response.json();
       
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-        // Transform data and filter for rates with "WEB" in rateName
+        // Transform data and filter for rates with "WEB" in rateCode
         const transformedData = data.data.map((property: any) => {
-          // Filter rates to only show rates with "WEB" in rateName
-          const webRates = (property.rates || []).filter((rate: any) => {
-            return rate.rateName?.toLowerCase().includes('web');
+          // Filter rateAvailabilities to only show rates with "WEB" in rateCode
+          const webRates = (property.rateAvailabilities || []).filter((rate: any) => {
+            return rate.rateCode?.toLowerCase().includes('web');
           });
 
           return {
@@ -185,11 +185,11 @@ const App: React.FC = () => {
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: webRates.map((rate: any) => ({
               rateId: rate.rateId || 0,
-              rateName: rate.rateName || 'Rate',
-              currency: rate.currency || 'SEK',
+              rateName: rate.shortName || rate.description || 'Rate',
+              currency: rate.currencyCode || 'SEK',
               currencySymbol: rate.currencySymbol || 'SEK',
-              totalPrice: parseFloat(rate.totalPrice) || 0,
-              avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
+              totalPrice: parseFloat(rate.totals?.gross) || 0,
+              avgNightlyRate: parseFloat(rate.avgRate) || 0,
               nights: parseInt(rate.nights) || calculateNights(),
               description: rate.description || ''
             }))
