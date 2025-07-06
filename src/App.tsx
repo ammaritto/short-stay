@@ -162,17 +162,17 @@ const searchAvailability = async (): Promise<void> => {
 
     try {
       const bookingData = {
-        guestDetails,
-        stayDetails: {
-          startDate: searchParams.startDate,
-          endDate: searchParams.endDate,
-          inventoryTypeId: selectedUnit.inventoryTypeId,
-          rateId: selectedUnit.selectedRate.rateId,
-          adults: searchParams.guests,
-          children: 0,
-          infants: 0
-        }
-      };
+  guestDetails,
+  stayDetails: {
+    startDate: searchParams.startDate,
+    endDate: searchParams.endDate,
+    inventoryTypeId: parseInt(selectedUnit.inventoryTypeId.toString()),
+    rateId: parseInt(selectedUnit.selectedRate.rateId.toString()),
+    adults: parseInt(searchParams.guests.toString()),
+    children: 0,
+    infants: 0
+  }
+};
 
       const response = await fetch(`${API_BASE_URL}/booking/create`, {
         method: 'POST',
