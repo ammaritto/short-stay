@@ -81,13 +81,8 @@ const App: React.FC = () => {
 
   // Community data from the API
   const communities = [
-    { id: 2, name: "Allihoop Årsta", area: "Årsta" },
-    { id: 3, name: "Bromma Friends", area: "Bromma" },
-    { id: 4, name: "Kransen Icons", area: "Midsommar Kransen" },
-    { id: 5, name: "Spånga Stars II", area: "Spånga" },
-    { id: 6, name: "Spånga Stars", area: "Spånga" },
     { id: 13, name: "Ängby Aces", area: "Ängby" },
-    { id: 15, name: "Svea Stories", area: "Svea Stories" }
+    { id: 3, name: "Bromma Friends", area: "Bromma" }
   ];
 
   // Photo mapping based on inventoryTypeId
@@ -466,16 +461,16 @@ const App: React.FC = () => {
             
             {/* Community Filter Buttons */}
             <div className="border-t border-gray-100 pt-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Filter by Community</h3>
-              <div className="flex flex-wrap gap-3">
+              <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
+              <div className="flex flex-wrap gap-3 items-center">
                 {communities.map((community) => (
                   <button
                     key={community.id}
                     onClick={() => toggleCommunity(community.id)}
-                    className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                    className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
                       searchParams.communities.includes(community.id)
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
                     }`}
                   >
                     {community.name}
@@ -490,7 +485,7 @@ const App: React.FC = () => {
                         setHasSearched(false);
                       }
                     }}
-                    className="px-4 py-2 rounded-xl font-medium text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all duration-200"
+                    className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
                   >
                     Clear All
                   </button>
