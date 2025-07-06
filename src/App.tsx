@@ -540,17 +540,35 @@ const App: React.FC = () => {
                     
                     {/* Content - Bottom on mobile, Right on desktop */}
                     <div className="flex-1 p-6 lg:p-8 flex flex-col">
-                      <div className="flex-1">
-                        <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
-                        <div className="flex items-center gap-2 text-gray-600 mb-4">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm">{unit.buildingName}</span>
+                      <div className="flex flex-col lg:flex-row lg:justify-between">
+                        {/* Left side - Studio info */}
+                        <div className="flex-1">
+                          <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
+                          <div className="flex items-center gap-2 text-gray-600 mb-4">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-sm">{unit.buildingName}</span>
+                          </div>
                         </div>
+                        
+                        {/* Right side - Pricing (outside the gray box) */}
+                        {unit.rates.length > 0 && unit.rates[0] && (
+                          <div className="text-right mt-4 lg:mt-0">
+                            <p className="text-3xl font-bold text-gray-900 mb-1">
+                              {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
+                            </p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              {formatCurrency(unit.rates[0].avgNightlyRate)}/night
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              VAT included
+                            </p>
+                          </div>
+                        )}
                       </div>
                       
-                      {/* Rates Section */}
+                      {/* Rates Section - Gray box with dates and button */}
                       {unit.rates.length > 0 && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 mt-4">
                           {unit.rates.map((rate) => (
                             <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
                               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
@@ -566,16 +584,7 @@ const App: React.FC = () => {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="text-right flex flex-col items-end">
-                                  <p className="text-3xl font-bold text-gray-900 mb-1">
-                                    {formatCurrency(rate.avgNightlyRate * calculateNights())}
-                                  </p>
-                                  <p className="text-sm text-gray-500 mb-1">
-                                    {formatCurrency(rate.avgNightlyRate)}/night
-                                  </p>
-                                  <p className="text-xs text-gray-400 mb-4">
-                                    VAT included
-                                  </p>
+                                <div className="flex items-center">
                                   <button
                                     onClick={() => selectUnit(unit, rate)}
                                     className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
