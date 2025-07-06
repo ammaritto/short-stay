@@ -12,7 +12,7 @@ interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
-  buildings: number[];
+  communities: number[];
 }
 
 interface Rate {
@@ -72,16 +72,15 @@ const App: React.FC = () => {
     startDate: '',
     endDate: '',
     guests: 1,
-    buildings: []
+    communities: []
   });
 
   // Additional state for search results
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
-  const [showBuildingDropdown, setShowBuildingDropdown] = useState(false);
 
-  // Building data from the API
-  const buildings = [
+  // Community data from the API
+  const communities = [
     { id: 2, name: "Allihoop Årsta", area: "Årsta" },
     { id: 3, name: "Bromma Friends", area: "Bromma" },
     { id: 4, name: "Kransen Icons", area: "Midsommar Kransen" },
@@ -116,7 +115,7 @@ const App: React.FC = () => {
       startDate: tomorrow.toISOString().split('T')[0],
       endDate: dayAfter.toISOString().split('T')[0],
       guests: 1,
-      buildings: []
+      communities: []
     });
   }, []);
 
@@ -174,29 +173,19 @@ const App: React.FC = () => {
     }
   };
 
-  // Handle building selection
-  const toggleBuilding = (buildingId: number) => {
+  // Handle community selection
+  const toggleCommunity = (communityId: number) => {
     setSearchParams(prev => ({
       ...prev,
-      buildings: prev.buildings.includes(buildingId)
-        ? prev.buildings.filter(id => id !== buildingId)
-        : [...prev.buildings, buildingId]
+      communities: prev.communities.includes(communityId)
+        ? prev.communities.filter(id => id !== communityId)
+        : [...prev.communities, communityId]
     }));
-    // Clear results when buildings change
+    // Clear results when communities change
     if (hasSearched) {
       setAvailability([]);
       setHasSearched(false);
     }
-  };
-
-  // Get selected building names for display
-  const getSelectedBuildingText = () => {
-    if (searchParams.buildings.length === 0) return "All Buildings";
-    if (searchParams.buildings.length === 1) {
-      const building = buildings.find(b => b.id === searchParams.buildings[0]);
-      return building?.name || "Unknown Building";
-    }
-    return `${searchParams.buildings.length} Buildings Selected`;
   };
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
@@ -225,9 +214,9 @@ const App: React.FC = () => {
         guests: searchParams.guests.toString()
       });
       
-      // Add building filter if buildings are selected
-      if (searchParams.buildings.length > 0) {
-        params.append('buildings', searchParams.buildings.join(','));
+      // Add community filter if communities are selected
+      if (searchParams.communities.length > 0) {
+        params.append('communities', searchParams.communities.join(','));
       }
       
       console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
@@ -272,12 +261,12 @@ const App: React.FC = () => {
           const hasRates = property.rates && property.rates.length > 0;
           if (!hasRates) return false;
           
-          // Then filter by selected buildings if any are selected
-          if (searchParams.buildings.length > 0) {
-            return searchParams.buildings.includes(property.buildingId);
+          // Then filter by selected communities if any are selected
+          if (searchParams.communities.length > 0) {
+            return searchParams.communities.includes(property.buildingId);
           }
           
-          // If no buildings selected, show all properties with rates
+          // If no communities selected, show all properties with rates
           return true;
         });
         
@@ -382,7 +371,7 @@ const App: React.FC = () => {
                 startDate: '',
                 endDate: '',
                 guests: 1,
-                buildings: []
+                communities: []
               });
               setGuestDetails({ firstName: '', lastName: '', email: '', phone: '' });
             }}
@@ -404,7 +393,7 @@ const App: React.FC = () => {
           
           {/* Search Form */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
@@ -463,54 +452,6 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Buildings</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-                  <button
-                    type="button"
-                    onClick={() => setShowBuildingDropdown(!showBuildingDropdown)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-left appearance-none"
-                  >
-                    <span className="block truncate">{getSelectedBuildingText()}</span>
-                  </button>
-                  {showBuildingDropdown && (
-                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                      <div className="p-2">
-                        <div className="mb-2 border-b border-gray-100 pb-2">
-                          <button
-                            onClick={() => {
-                              setSearchParams(prev => ({ ...prev, buildings: [] }));
-                              if (hasSearched) {
-                                setAvailability([]);
-                                setHasSearched(false);
-                              }
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium"
-                          >
-                            Clear All Filters
-                          </button>
-                        </div>
-                        {buildings.map((building) => (
-                          <label key={building.id} className="flex items-center px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={searchParams.buildings.includes(building.id)}
-                              onChange={() => toggleBuilding(building.id)}
-                              className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <div className="flex-1">
-                              <div className="text-sm font-medium text-gray-900">{building.name}</div>
-                              <div className="text-xs text-gray-500">{building.area}</div>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               <div className="flex items-end">
                 <button
                   onClick={searchAvailability}
@@ -520,6 +461,40 @@ const App: React.FC = () => {
                   <Search className="h-5 w-5" />
                   {loading ? 'Searching...' : 'Search'}
                 </button>
+              </div>
+            </div>
+            
+            {/* Community Filter Buttons */}
+            <div className="border-t border-gray-100 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Filter by Community</h3>
+              <div className="flex flex-wrap gap-3">
+                {communities.map((community) => (
+                  <button
+                    key={community.id}
+                    onClick={() => toggleCommunity(community.id)}
+                    className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+                      searchParams.communities.includes(community.id)
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {community.name}
+                  </button>
+                ))}
+                {searchParams.communities.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchParams(prev => ({ ...prev, communities: [] }));
+                      if (hasSearched) {
+                        setAvailability([]);
+                        setHasSearched(false);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl font-medium text-blue-600 border border-blue-200 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    Clear All
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -610,7 +585,7 @@ const App: React.FC = () => {
                     <h4 className="font-medium text-gray-700 mb-4">Booking Summary</h4>
                     <div className="space-y-2 text-sm text-gray-600">
                       <p><strong>Studio:</strong> {selectedUnit.inventoryTypeName}</p>
-                      <p><strong>Building:</strong> {selectedUnit.buildingName}</p>
+                      <p><strong>Community:</strong> {selectedUnit.buildingName}</p>
                       <p><strong>Rate:</strong> {selectedUnit.selectedRate.rateName}</p>
                       <p><strong>Check-in:</strong> {formatDisplayDate(searchParams.startDate)}</p>
                       <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
