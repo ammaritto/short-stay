@@ -440,7 +440,7 @@ const App: React.FC = () => {
                     }}
                     className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none"
                   >
-                    {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                    {[1,2].map(num => (
                       <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
                     ))}
                   </select>
