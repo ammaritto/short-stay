@@ -91,9 +91,9 @@ const App: React.FC = () => {
   const formatCurrency = (amount: number): string => {
     try {
       const num = parseFloat(amount?.toString() || '0') || 0;
-      return `£${num.toFixed(2)}`;
+      return `${num.toLocaleString('sv-SE')} SEK`;
     } catch (e) {
-      return '£0.00';
+      return '0 SEK';
     }
   };
 
@@ -391,20 +391,6 @@ const App: React.FC = () => {
                           <span>{unit.buildingName}</span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">{calculateNights()} nights</p>
-                        <p className="text-xs text-gray-400">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</p>
-                        {unit.rates.length > 0 && (
-                          <div className="mt-2">
-                            <p className="text-2xl font-bold text-green-600">
-                              {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {formatCurrency(unit.rates[0].avgNightlyRate)}/night
-                            </p>
-                          </div>
-                        )}
-                      </div>
                     </div>
                     
                     {unit.rates.length > 0 && (
@@ -415,7 +401,7 @@ const App: React.FC = () => {
                               <div className="flex-1">
                                 <h5 className="font-medium text-gray-800 text-lg">{rate.rateName}</h5>
                                 <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                                  <span className="font-medium">{rate.nights} nights</span>
+                                  <span className="font-medium">{calculateNights()} nights</span>
                                   <span className="text-xs">•</span>
                                   <span className="text-xs">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
                                 </div>
