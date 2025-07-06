@@ -1,10 +1,4 @@
-// Get minimum end date
-  const getMinEndDate = (): string => {
-    if (!searchParams.startDate) return '';
-    const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 1);
-    return minDate.toISOString().split('T')[0];
-  };import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
 
 // TypeScript interfaces
@@ -145,6 +139,24 @@ const App: React.FC = () => {
     }
   };
 
+  // Format date with day name (e.g., "Monday, 07 Jul 2025")
+  const formatDateWithDay = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      const dayName = days[date.getDay()];
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      
+      return `${dayName}, ${day} ${month} ${year}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   // Handle start date change
   const handleStartDateChange = (newStartDate: string) => {
     const startDate = new Date(newStartDate);
@@ -182,6 +194,8 @@ const App: React.FC = () => {
       setHasSearched(false);
     }
   };
+
+  // Get minimum end date
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
@@ -387,117 +401,117 @@ const App: React.FC = () => {
           <p className="text-gray-600 text-center mb-6 md:mb-8">Find your perfect studio in Stockholm</p>
           
           {/* Search Form */}
-<div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-6 md:p-8 mb-6 md:mb-8">
-  <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
-    <div className="w-full sm:col-span-1">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
-      <div className="relative">
-        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        <input
-          type="date"
-          value={searchParams.startDate}
-          onChange={(e) => handleStartDateChange(e.target.value)}
-          min={new Date().toISOString().split('T')[0]}
-          className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-        />
-      </div>
-    </div>
-    
-    <div className="w-full sm:col-span-1">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
-      <div className="relative">
-        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        <input
-          type="date"
-          value={searchParams.endDate}
-          onChange={(e) => {
-            setSearchParams({...searchParams, endDate: e.target.value});
-            if (hasSearched) {
-              setAvailability([]);
-              setHasSearched(false);
-            }
-          }}
-          min={getMinEndDate()}
-          className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-        />
-      </div>
-    </div>
-    
-    <div className="w-full sm:col-span-2 md:col-span-1">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
-      <div className="relative">
-        <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        <select
-          value={searchParams.guests}
-          onChange={(e) => {
-            setSearchParams({...searchParams, guests: parseInt(e.target.value)});
-            if (hasSearched) {
-              setAvailability([]);
-              setHasSearched(false);
-            }
-          }}
-          className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
-        >
-          {[1,2].map(num => (
-            <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
-          ))}
-        </select>
-        {/* Custom dropdown arrow */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-    </div>
-    
-    <div className="w-full sm:col-span-2 md:col-span-1">
-      <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
-      <button
-        onClick={searchAvailability}
-        disabled={loading}
-        className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium"
-      >
-        <Search className="h-5 w-5" />
-        {loading ? 'Searching...' : 'Search'}
-      </button>
-    </div>
-  </div>
-  
-  {/* Community Filter Buttons with better mobile spacing */}
-  <div className="border-t border-gray-100 pt-6 md:pt-6">
-    <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
-    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-      {communities.map((community) => (
-        <button
-          key={community.id}
-          onClick={() => toggleCommunity(community.id)}
-          className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
-            searchParams.communities.includes(community.id)
-              ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
-              : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
-          }`}
-        >
-          {community.name}
-        </button>
-      ))}
-      {searchParams.communities.length > 0 && (
-        <button
-          onClick={() => {
-            setSearchParams(prev => ({ ...prev, communities: [] }));
-            if (hasSearched) {
-              setAvailability([]);
-              setHasSearched(false);
-            }
-          }}
-          className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
-        >
-          Clear All
-        </button>
-      )}
-    </div>
-  </div>
-</div>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-6 md:p-8 mb-6 md:mb-8">
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
+              <div className="w-full sm:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={searchParams.startDate}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
+                  />
+                </div>
+              </div>
+              
+              <div className="w-full sm:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={searchParams.endDate}
+                    onChange={(e) => {
+                      setSearchParams({...searchParams, endDate: e.target.value});
+                      if (hasSearched) {
+                        setAvailability([]);
+                        setHasSearched(false);
+                      }
+                    }}
+                    min={getMinEndDate()}
+                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
+                  />
+                </div>
+              </div>
+              
+              <div className="w-full sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
+                <div className="relative">
+                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  <select
+                    value={searchParams.guests}
+                    onChange={(e) => {
+                      setSearchParams({...searchParams, guests: parseInt(e.target.value)});
+                      if (hasSearched) {
+                        setAvailability([]);
+                        setHasSearched(false);
+                      }
+                    }}
+                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
+                  >
+                    {[1,2].map(num => (
+                      <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                  {/* Custom dropdown arrow */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="w-full sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
+                <button
+                  onClick={searchAvailability}
+                  disabled={loading}
+                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium"
+                >
+                  <Search className="h-5 w-5" />
+                  {loading ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+            </div>
+            
+            {/* Community Filter Buttons with better mobile spacing */}
+            <div className="border-t border-gray-100 pt-6 md:pt-6">
+              <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                {communities.map((community) => (
+                  <button
+                    key={community.id}
+                    onClick={() => toggleCommunity(community.id)}
+                    className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
+                      searchParams.communities.includes(community.id)
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
+                    }`}
+                  >
+                    {community.name}
+                  </button>
+                ))}
+                {searchParams.communities.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchParams(prev => ({ ...prev, communities: [] }));
+                      if (hasSearched) {
+                        setAvailability([]);
+                        setHasSearched(false);
+                      }
+                    }}
+                    className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
@@ -544,7 +558,12 @@ const App: React.FC = () => {
                                   <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-500 mb-2">
                                     <span className="font-medium bg-gray-100 px-2 lg:px-3 py-1 rounded-full">{calculateNights()} nights</span>
                                     <span className="text-xs text-gray-400 hidden lg:inline">•</span>
-                                    <span className="text-xs lg:text-sm">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
+                                    <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 text-xs lg:text-sm">
+                                      <span className="font-medium">From:</span>
+                                      <span>{formatDateWithDay(searchParams.startDate)}</span>
+                                      <span className="font-medium lg:ml-2">To:</span>
+                                      <span>{formatDateWithDay(searchParams.endDate)}</span>
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="text-left lg:text-right lg:ml-8">
