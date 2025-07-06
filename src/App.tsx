@@ -8,18 +8,17 @@ const handleBookingSubmit = async (): Promise<void> => {
   setError('');
 
   try {
-const bookingData = {
-  guestDetails,
-  stayDetails: {
-    startDate: searchParams.startDate,
-    endDate: searchParams.endDate,
-    inventoryTypeId: parseInt(selectedUnit.inventoryTypeId.toString()),
-    rateId: parseInt(selectedUnit.selectedRate.rateId.toString()),
-    adults: parseInt(searchParams.guests.toString()),
-    children: 0,
-    infants: 0
-  }
-};
+    const bookingData = {
+      guestDetails,
+      stayDetails: {
+        startDate: searchParams.startDate,
+        endDate: searchParams.endDate,
+        inventoryTypeId: parseInt(selectedUnit.inventoryTypeId.toString()),
+        rateId: parseInt(selectedUnit.selectedRate.rateId.toString()),
+        adults: parseInt(searchParams.guests.toString()),
+        children: 0,
+        infants: 0
+      }
     };
 
     console.log('Creating booking with data:', bookingData); // Debug log
