@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from 'react';
+// Get minimum end date
+  const getMinEndDate = (): string => {
+    if (!searchParams.startDate) return '';
+    const minDate = new Date(searchParams.startDate);
+    minDate.setDate(minDate.getDate() + 1);
+    return minDate.toISOString().split('T')[0];
+  };import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
 
 // TypeScript interfaces
@@ -6,6 +12,7 @@ interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
+  buildings: number[];
 }
 
 interface Rate {
@@ -64,12 +71,25 @@ const App: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>({
     startDate: '',
     endDate: '',
-    guests: 1
+    guests: 1,
+    buildings: []
   });
 
   // Additional state for search results
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showBuildingDropdown, setShowBuildingDropdown] = useState(false);
+
+  // Building data from the API
+  const buildings = [
+    { id: 2, name: "Allihoop Årsta", area: "Årsta" },
+    { id: 3, name: "Bromma Friends", area: "Bromma" },
+    { id: 4, name: "Kransen Icons", area: "Midsommar Kransen" },
+    { id: 5, name: "Spånga Stars II", area: "Spånga" },
+    { id: 6, name: "Spånga Stars", area: "Spånga" },
+    { id: 13, name: "Ängby Aces", area: "Ängby" },
+    { id: 15, name: "Svea Stories", area: "Svea Stories" }
+  ];
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -95,7 +115,8 @@ const App: React.FC = () => {
     setSearchParams({
       startDate: tomorrow.toISOString().split('T')[0],
       endDate: dayAfter.toISOString().split('T')[0],
-      guests: 1
+      guests: 1,
+      buildings: []
     });
   }, []);
 
@@ -153,7 +174,30 @@ const App: React.FC = () => {
     }
   };
 
-  // Get minimum end date
+  // Handle building selection
+  const toggleBuilding = (buildingId: number) => {
+    setSearchParams(prev => ({
+      ...prev,
+      buildings: prev.buildings.includes(buildingId)
+        ? prev.buildings.filter(id => id !== buildingId)
+        : [...prev.buildings, buildingId]
+    }));
+    // Clear results when buildings change
+    if (hasSearched) {
+      setAvailability([]);
+      setHasSearched(false);
+    }
+  };
+
+  // Get selected building names for display
+  const getSelectedBuildingText = () => {
+    if (searchParams.buildings.length === 0) return "All Buildings";
+    if (searchParams.buildings.length === 1) {
+      const building = buildings.find(b => b.id === searchParams.buildings[0]);
+      return building?.name || "Unknown Building";
+    }
+    return `${searchParams.buildings.length} Buildings Selected`;
+  };
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
@@ -180,6 +224,11 @@ const App: React.FC = () => {
         endDate: searchParams.endDate,
         guests: searchParams.guests.toString()
       });
+      
+      // Add building filter if buildings are selected
+      if (searchParams.buildings.length > 0) {
+        params.append('buildings', searchParams.buildings.join(','));
+      }
       
       console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
       
@@ -218,7 +267,13 @@ const App: React.FC = () => {
               description: rate.description || ''
             }))
           };
-        }).filter((property: any) => property.rates && property.rates.length > 0);
+        }).filter((property: any) => {
+          // Filter by selected buildings if any are selected
+          if (searchParams.buildings.length > 0) {
+            return searchParams.buildings.includes(property.buildingId);
+          }
+          return property.rates && property.rates.length > 0;
+        });
         
         console.log('Transformed data:', transformedData);
         setAvailability(transformedData);
@@ -317,6 +372,12 @@ const App: React.FC = () => {
               setSelectedUnit(null);
               setAvailability([]);
               setHasSearched(false);
+              setSearchParams({
+                startDate: '',
+                endDate: '',
+                guests: 1,
+                buildings: []
+              });
               setGuestDetails({ firstName: '', lastName: '', email: '', phone: '' });
             }}
             className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -337,7 +398,7 @@ const App: React.FC = () => {
           
           {/* Search Form */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
@@ -393,6 +454,54 @@ const App: React.FC = () => {
                       <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
                     ))}
                   </select>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Buildings</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                  <button
+                    type="button"
+                    onClick={() => setShowBuildingDropdown(!showBuildingDropdown)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-left appearance-none"
+                  >
+                    <span className="block truncate">{getSelectedBuildingText()}</span>
+                  </button>
+                  {showBuildingDropdown && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      <div className="p-2">
+                        <div className="mb-2">
+                          <button
+                            onClick={() => {
+                              setSearchParams(prev => ({ ...prev, buildings: [] }));
+                              if (hasSearched) {
+                                setAvailability([]);
+                                setHasSearched(false);
+                              }
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-lg"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                        {buildings.map((building) => (
+                          <label key={building.id} className="flex items-center px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={searchParams.buildings.includes(building.id)}
+                              onChange={() => toggleBuilding(building.id)}
+                              className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            />
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-gray-900">{building.name}</div>
+                              <div className="text-xs text-gray-500">{building.area}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
