@@ -387,8 +387,6 @@ const App: React.FC = () => {
           <p className="text-gray-600 text-center mb-6 md:mb-8">Find your perfect studio in Stockholm</p>
           
           {/* Search Form */}
-          // Updated Search Form section with better mobile padding
-
 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-6 md:p-8 mb-6 md:mb-8">
   <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
     <div className="w-full sm:col-span-1">
