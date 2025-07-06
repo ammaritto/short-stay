@@ -171,11 +171,17 @@ const App: React.FC = () => {
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-        // Transform data and filter for rates with "WEB" in rateCode
+        // Transform data and filter for rates with "WEB" in rateCode AND valid pricing
         const transformedData = data.data.map((property: any) => {
-          // Filter rates to only show rates with "WEB" in rateCode
+          // Filter rates to only show rates with "WEB" in rateCode AND valid pricing
           const webRates = (property.rates || []).filter((rate: any) => {
-            return rate.rateCode?.toLowerCase().includes('web');
+            const hasWebCode = rate.rateCode?.toLowerCase().includes('web');
+            const hasValidPrice = parseFloat(rate.avgNightlyRate) > 0;
+            const hasValidTotalPrice = rate.totalPrice && (
+              parseFloat(rate.totalPrice.gross) > 0 || 
+              parseFloat(rate.totalPrice) > 0
+            );
+            return hasWebCode && hasValidPrice && hasValidTotalPrice;
           });
 
           return {
