@@ -421,9 +421,9 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
               {availability.map((unit) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                  <div className="flex flex-col lg:flex-row h-full">
+                  <div className="flex flex-col lg:flex-row min-h-[300px] lg:min-h-[250px]">
                     {/* Property Image - Top on mobile, Left on desktop */}
-                    <div className="relative w-full lg:w-80 h-64 lg:h-full flex-shrink-0 lg:-ml-0 lg:-mt-0 lg:-mb-0">
+                    <div className="relative w-full lg:w-80 h-64 lg:h-auto lg:min-h-full flex-shrink-0">
                       <img
                         src={getPropertyImage(unit.inventoryTypeId)}
                         alt={unit.inventoryTypeName}
