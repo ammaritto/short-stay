@@ -421,64 +421,111 @@ const App: React.FC = () => {
               <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
               {availability.map((unit) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                  {/* Property Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={getPropertyImage(unit.inventoryTypeId)}
-                      alt={unit.inventoryTypeName}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
-                      }}
-                    />
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-700">
-                      {unit.inventoryTypeName}
-                    </div>
-                  </div>
-                  
-                  <div className="p-8">
-                    <div className="flex justify-between items-start mb-6">
-                      <div>
-                        <h3 className="text-2xl font-light text-gray-900 mb-2">{unit.inventoryTypeName}</h3>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm">{unit.buildingName}</span>
-                        </div>
-                      </div>
+                  <div className="flex flex-col lg:flex-row">
+                    {/* Property Image - Top on mobile, Left on desktop */}
+                    <div className="relative w-full lg:w-80 h-64 lg:h-64 flex-shrink-0">
+                      <img
+                        src={getPropertyImage(unit.inventoryTypeId)}
+                        alt={unit.inventoryTypeName}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/320x256/e5e7eb/9ca3af?text=Photo+Coming+Soon';
+                        }}
+                      />
                     </div>
                     
-                    {unit.rates.length > 0 && (
-                      <div className="space-y-4">
-                        {unit.rates.map((rate) => (
-                          <div key={rate.rateId} className="border border-gray-100 rounded-xl p-6 hover:border-blue-200 transition-all duration-200 bg-gradient-to-r from-gray-50 to-white">
-                            <div className="flex justify-between items-center">
-                              <div className="flex-1">
-                                <h5 className="text-lg font-medium text-gray-900 mb-3">{rate.rateName}</h5>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                  <span className="font-medium bg-gray-100 px-3 py-1 rounded-full">{calculateNights()} nights</span>
-                                  <span className="text-xs text-gray-400">•</span>
-                                  <span className="text-sm">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
-                                </div>
+                    {/* Content - Bottom on mobile, Right on desktop */}
+                    <div className="flex-1 p-6 lg:p-8">
+                      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start mb-6">
+                        <div className="flex-1">
+                          <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
+                          <div className="flex items-center gap-2 text-gray-600 mb-4">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-sm">{unit.buildingName}</span>
+                          </div>
+                          
+                          {/* Studio Details Section */}
+                          <div className="mb-6">
+                            <h4 className="text-base lg:text-lg font-medium text-gray-900 mb-3">Studio details</h4>
+                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 lg:gap-3">
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">🏠</span>
+                                <span>Private</span>
                               </div>
-                              <div className="text-right ml-8">
-                                <p className="text-3xl font-light text-gray-900 mb-1">
-                                  {formatCurrency(rate.avgNightlyRate * calculateNights())}
-                                </p>
-                                <p className="text-sm text-gray-500 mb-4">
-                                  {formatCurrency(rate.avgNightlyRate)}/night
-                                </p>
-                                <button
-                                  onClick={() => selectUnit(unit, rate)}
-                                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                >
-                                  Book Now
-                                </button>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">🛏️</span>
+                                <span>1 Room</span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">📏</span>
+                                <span>Studio</span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">📐</span>
+                                <span>14 Sqm</span>
                               </div>
                             </div>
                           </div>
-                        ))}
+
+                          {/* Shared Spaces Section */}
+                          <div className="mb-6">
+                            <h4 className="text-base lg:text-lg font-medium text-gray-900 mb-3">Shared Spaces</h4>
+                            <div className="grid grid-cols-2 lg:flex lg:flex-wrap gap-2 lg:gap-3">
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">🍳</span>
+                                <span>Large Kitchen</span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">💼</span>
+                                <span>Co-working Space</span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">🛋️</span>
+                                <span>Living Room</span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-gray-50 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm text-gray-700">
+                                <span className="text-sm">🍽️</span>
+                                <span>Dining Room</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                      
+                      {/* Rates Section */}
+                      {unit.rates.length > 0 && (
+                        <div className="space-y-4">
+                          {unit.rates.map((rate) => (
+                            <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
+                              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+                                <div className="flex-1">
+                                  <h5 className="text-base lg:text-lg font-medium text-gray-900 mb-2 lg:mb-3">{rate.rateName}</h5>
+                                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-500">
+                                    <span className="font-medium bg-gray-100 px-2 lg:px-3 py-1 rounded-full">{calculateNights()} nights</span>
+                                    <span className="text-xs text-gray-400 hidden lg:inline">•</span>
+                                    <span className="text-xs lg:text-sm">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
+                                  </div>
+                                </div>
+                                <div className="text-left lg:text-right lg:ml-8">
+                                  <p className="text-2xl lg:text-3xl font-light text-gray-900 mb-1">
+                                    {formatCurrency(rate.avgNightlyRate * calculateNights())}
+                                  </p>
+                                  <p className="text-xs lg:text-sm text-gray-500 mb-3 lg:mb-4">
+                                    {formatCurrency(rate.avgNightlyRate)}/night
+                                  </p>
+                                  <button
+                                    onClick={() => selectUnit(unit, rate)}
+                                    className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm lg:text-base"
+                                  >
+                                    Book Now
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
