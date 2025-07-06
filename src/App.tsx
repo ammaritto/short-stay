@@ -307,50 +307,51 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Short Stay Booking</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <h1 className="text-4xl font-light text-gray-900 mb-2 text-center">Short Stay Booking</h1>
+          <p className="text-gray-600 text-center mb-8">Find your perfect studio in Stockholm</p>
           
           {/* Search Form */}
-          <div className="bg-gray-50 p-6 rounded-lg mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
                   <input
                     type="date"
                     value={searchParams.startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
                   <input
                     type="date"
                     value={searchParams.endDate}
                     onChange={(e) => setSearchParams({...searchParams, endDate: e.target.value})}
                     min={getMinEndDate()}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
                 <div className="relative">
-                  <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Users className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
                   <select
                     value={searchParams.guests}
                     onChange={(e) => setSearchParams({...searchParams, guests: parseInt(e.target.value)})}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none"
                   >
                     {[1,2,3,4,5,6,7,8,9,10].map(num => (
                       <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
@@ -363,9 +364,9 @@ const App: React.FC = () => {
                 <button
                   onClick={searchAvailability}
                   disabled={loading}
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  <Search className="h-4 w-4" />
+                  <Search className="h-5 w-5" />
                   {loading ? 'Searching...' : 'Search'}
                 </button>
               </div>
@@ -373,7 +374,7 @@ const App: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
               <p className="text-red-700">{error}</p>
             </div>
           )}
@@ -381,43 +382,43 @@ const App: React.FC = () => {
           {/* Search Results */}
           {availability.length > 0 && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-gray-800">Available Units ({availability.length})</h2>
+              <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
               {availability.map((unit) => (
-                <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
+                <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                  <div className="p-8">
+                    <div className="flex justify-between items-start mb-6">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-800">{unit.inventoryTypeName}</h3>
-                        <div className="flex items-center gap-2 text-gray-600 mt-1">
+                        <h3 className="text-2xl font-light text-gray-900 mb-2">{unit.inventoryTypeName}</h3>
+                        <div className="flex items-center gap-2 text-gray-600">
                           <MapPin className="h-4 w-4" />
-                          <span>{unit.buildingName}</span>
+                          <span className="text-sm">{unit.buildingName}</span>
                         </div>
                       </div>
                     </div>
                     
                     {unit.rates.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {unit.rates.map((rate) => (
-                          <div key={rate.rateId} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors bg-white shadow-sm">
+                          <div key={rate.rateId} className="border border-gray-100 rounded-xl p-6 hover:border-blue-200 transition-all duration-200 bg-gradient-to-r from-gray-50 to-white">
                             <div className="flex justify-between items-center">
                               <div className="flex-1">
-                                <h5 className="font-medium text-gray-800 text-lg">{rate.rateName}</h5>
-                                <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
-                                  <span className="font-medium">{calculateNights()} nights</span>
-                                  <span className="text-xs">•</span>
-                                  <span className="text-xs">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
+                                <h5 className="text-lg font-medium text-gray-900 mb-3">{rate.rateName}</h5>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <span className="font-medium bg-gray-100 px-3 py-1 rounded-full">{calculateNights()} nights</span>
+                                  <span className="text-xs text-gray-400">•</span>
+                                  <span className="text-sm">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
                                 </div>
                               </div>
-                              <div className="text-right ml-6">
-                                <p className="text-3xl font-bold text-green-600 mb-1">
+                              <div className="text-right ml-8">
+                                <p className="text-3xl font-light text-gray-900 mb-1">
                                   {formatCurrency(rate.avgNightlyRate * calculateNights())}
                                 </p>
-                                <p className="text-sm text-gray-500 mb-3">
+                                <p className="text-sm text-gray-500 mb-4">
                                   {formatCurrency(rate.avgNightlyRate)}/night
                                 </p>
                                 <button
                                   onClick={() => selectUnit(unit, rate)}
-                                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                 >
                                   Book Now
                                 </button>
@@ -435,88 +436,88 @@ const App: React.FC = () => {
 
           {/* Booking Form Modal */}
           {showBookingForm && selectedUnit && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-4">Complete Your Booking</h3>
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+              <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
+                <div className="p-8">
+                  <h3 className="text-2xl font-light text-gray-900 mb-6">Complete Your Booking</h3>
                   
                   {/* Booking Summary */}
-                  <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h4 className="font-medium text-gray-700 mb-2">Booking Summary</h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Unit:</strong> {selectedUnit.inventoryTypeName}</p>
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl mb-6 border border-gray-100">
+                    <h4 className="font-medium text-gray-700 mb-4">Booking Summary</h4>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <p><strong>Studio:</strong> {selectedUnit.inventoryTypeName}</p>
                       <p><strong>Building:</strong> {selectedUnit.buildingName}</p>
                       <p><strong>Rate:</strong> {selectedUnit.selectedRate.rateName}</p>
                       <p><strong>Check-in:</strong> {formatDisplayDate(searchParams.startDate)}</p>
                       <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
                       <p><strong>Guests:</strong> {searchParams.guests}</p>
-                      <p className="text-lg font-bold text-green-600">
+                      <p className="text-lg font-medium text-gray-900 pt-2 border-t border-gray-200">
                         <strong>Total: {formatCurrency(selectedUnit.selectedRate.avgNightlyRate * calculateNights())}</strong>
                       </p>
                     </div>
                   </div>
 
                   {/* Guest Details Form */}
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
                         <div className="relative">
-                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <User className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
                           <input
                             type="text"
                             value={guestDetails.firstName}
                             onChange={(e) => setGuestDetails({...guestDetails, firstName: e.target.value})}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                           />
                         </div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
                         <div className="relative">
-                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <User className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
                           <input
                             type="text"
                             value={guestDetails.lastName}
                             onChange={(e) => setGuestDetails({...guestDetails, lastName: e.target.value})}
-                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                           />
                         </div>
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Mail className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
                         <input
                           type="email"
                           value={guestDetails.email}
                           onChange={(e) => setGuestDetails({...guestDetails, email: e.target.value})}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Phone className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
                         <input
                           type="tel"
                           value={guestDetails.phone || ''}
                           onChange={(e) => setGuestDetails({...guestDetails, phone: e.target.value})}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                         />
                       </div>
                     </div>
 
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-4 pt-6">
                       <button
                         type="button"
                         onClick={() => setShowBookingForm(false)}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
                       >
                         Cancel
                       </button>
@@ -524,7 +525,7 @@ const App: React.FC = () => {
                         type="button"
                         onClick={handleBookingSubmit}
                         disabled={loading}
-                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
                         <CreditCard className="h-4 w-4" />
                         {loading ? 'Booking...' : 'Confirm Booking'}
