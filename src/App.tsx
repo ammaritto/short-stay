@@ -387,9 +387,9 @@ const App: React.FC = () => {
           <p className="text-gray-600 text-center mb-8">Find your perfect studio in Stockholm</p>
           
           {/* Search Form */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div>
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-8 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 mb-4 md:mb-6">
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
@@ -403,7 +403,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div>
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
@@ -424,7 +424,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div>
+              <div className="w-full">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
                 <div className="relative">
                   <Users className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
@@ -447,7 +447,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex items-end">
+              <div className="w-full flex items-end">
                 <button
                   onClick={searchAvailability}
                   disabled={loading}
