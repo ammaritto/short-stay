@@ -540,7 +540,7 @@ const App: React.FC = () => {
                     
                     {/* Content - Bottom on mobile, Right on desktop */}
                     <div className="flex-1 p-6 lg:p-8 flex flex-col">
-                      <div className="flex flex-col lg:flex-row lg:justify-between">
+                      <div className="flex flex-row justify-between">
                         {/* Left side - Studio info */}
                         <div className="flex-1">
                           <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
@@ -550,13 +550,13 @@ const App: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Right side - Pricing (outside the gray box on desktop, inside on mobile) */}
+                        {/* Right side - Pricing (same row on both mobile and desktop) */}
                         {unit.rates.length > 0 && unit.rates[0] && (
-                          <div className="text-left lg:text-right mb-6 lg:mb-0 lg:mt-0">
-                            <p className="text-3xl font-bold text-gray-900 mb-1">
+                          <div className="text-right">
+                            <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-0.5">
                               {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
                             </p>
-                            <p className="text-sm text-gray-500 mb-1">
+                            <p className="text-xs lg:text-sm text-gray-500 mb-0.5">
                               {formatCurrency(unit.rates[0].avgNightlyRate)}/night
                             </p>
                             <p className="text-xs text-gray-400">
@@ -568,7 +568,7 @@ const App: React.FC = () => {
                       
                       {/* Rates Section - Gray box with dates and button */}
                       {unit.rates.length > 0 && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 mt-2">
                           {unit.rates.map((rate) => (
                             <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
                               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
