@@ -189,14 +189,25 @@ const App: React.FC = () => {
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-        // Transform data without any filters (show all results)
+        // Transform data and filter for rates with "WEB" in rateCode AND valid pricing
         const transformedData = data.data.map((property: any) => {
+          // Filter rates to only show rates with "WEB" in rateCode AND valid pricing
+          const webRates = (property.rates || []).filter((rate: any) => {
+            const hasWebCode = rate.rateCode?.toLowerCase().includes('web');
+            const hasValidPrice = parseFloat(rate.avgNightlyRate) > 0;
+            const hasValidTotalPrice = rate.totalPrice && (
+              parseFloat(rate.totalPrice.gross) > 0 || 
+              parseFloat(rate.totalPrice) > 0
+            );
+            return hasWebCode && hasValidPrice && hasValidTotalPrice;
+          });
+
           return {
             buildingId: property.buildingId || 0,
             buildingName: property.buildingName || 'Unknown Building',
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-            rates: (property.rates || []).map((rate: any) => ({
+            rates: webRates.map((rate: any) => ({
               rateId: rate.rateId || 0,
               rateName: rate.rateName || 'Rate',
               currency: rate.currency || 'SEK',
@@ -213,7 +224,7 @@ const App: React.FC = () => {
         setAvailability(transformedData);
       } else {
         console.error('API returned error:', data);
-        setError(data.error || 'No availability found');
+        setError(data.error || 'No WEB rates available');
       }
     } catch (err) {
       console.error('Search error:', err);
