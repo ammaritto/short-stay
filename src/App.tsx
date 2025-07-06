@@ -224,68 +224,74 @@ const App: React.FC = () => {
         guests: searchParams.guests.toString()
       });
       
-// Add community filter if communities are selected
-if (searchParams.communities.length > 0) {
-  params.append('communities', searchParams.communities.join(','));
-}
+      // Add community filter if communities are selected
+      if (searchParams.communities.length > 0) {
+        params.append('communities', searchParams.communities.join(','));
+      }
+      
+      console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
+      
+      const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
+      const data = await response.json();
+      
+      console.log('Raw API response:', data);
+      
+      if (data.success && data.data) {
+        // Transform data and filter for rates with "WEB" in rateCode AND valid pricing
+        const transformedData = data.data.map((property: any) => {
+          // Filter rates to only show rates with "WEB" in rateCode AND valid pricing
+          const webRates = (property.rates || []).filter((rate: any) => {
+            const hasWebCode = rate.rateCode?.toLowerCase().includes('web');
+            const hasValidPrice = parseFloat(rate.avgNightlyRate) > 0;
+            const hasValidTotalPrice = rate.totalPrice && (
+              parseFloat(rate.totalPrice.gross) > 0 || 
+              parseFloat(rate.totalPrice) > 0
+            );
+            return hasWebCode && hasValidPrice && hasValidTotalPrice;
+          });
 
-console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
-
-const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
-const data = await response.json();
-
-console.log('Raw API response:', data);
-
-if (data.success && data.data) {
-  // Transform data - now includes all rates without filtering
-  const transformedData = data.data.map((property: any) => {
-    // Include all rates without filtering
-    const allRates = (property.rates || []).map((rate: any) => ({
-      rateId: rate.rateId || 0,
-      rateName: rate.rateName || 'Rate',
-      currency: rate.currency || 'SEK',
-      currencySymbol: rate.currencySymbol || 'SEK',
-      totalPrice: parseFloat(rate.totalPrice) || 0,
-      avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
-      nights: parseInt(rate.nights) || calculateNights(),
-      description: rate.description || ''
-    }));
-
-    return {
-      buildingId: property.buildingId || 0,
-      buildingName: property.buildingName || 'Unknown Building',
-      inventoryTypeId: property.inventoryTypeId || 0,
-      inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-      rates: allRates
-    };
-  }).filter((property: any) => {
-    // Filter by selected communities if any are selected
-    if (searchParams.communities.length > 0) {
-      return searchParams.communities.includes(property.buildingId);
-    }
-    
-    // If no communities selected, show all properties
-    return true;
-  });
-}
+          return {
+            buildingId: property.buildingId || 0,
+            buildingName: property.buildingName || 'Unknown Building',
+            inventoryTypeId: property.inventoryTypeId || 0,
+            inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
+            rates: webRates.map((rate: any) => ({
+              rateId: rate.rateId || 0,
+              rateName: rate.rateName || 'Rate',
+              currency: rate.currency || 'SEK',
+              currencySymbol: rate.currencySymbol || 'SEK',
+              totalPrice: parseFloat(rate.totalPrice) || 0,
+              avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
+              nights: parseInt(rate.nights) || calculateNights(),
+              description: rate.description || ''
+            }))
+          };
+        }).filter((property: any) => {
+          // First check if property has rates
+          const hasRates = property.rates && property.rates.length > 0;
+          if (!hasRates) return false;
+          
+          // Then filter by selected communities if any are selected
+          if (searchParams.communities.length > 0) {
+            return searchParams.communities.includes(property.buildingId);
+          }
+          
+          // If no communities selected, show all properties with rates
+          return true;
+        });
         
-try {
-  // ... your existing code above this point
-
-  if (data.success && data.data) {
-    // ... your data transformation code
-    console.log('Transformed data:', transformedData);
-    setAvailability(transformedData);
-  } else {
-    console.error('API returned error:', data);
-    setError(data.error || 'No WEB rates available');
-  }
-} catch (err) {
-  console.error('Search error:', err);
-  setError('Failed to connect to the server');
-} finally {
-  setLoading(false);
-}
+        console.log('Transformed data:', transformedData);
+        setAvailability(transformedData);
+      } else {
+        console.error('API returned error:', data);
+        setError(data.error || 'No WEB rates available');
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Failed to connect to the server');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Select unit for booking
