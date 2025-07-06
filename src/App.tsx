@@ -11,7 +11,6 @@ const ShortStayBooking = () => {
   });
   
   const [availability, setAvailability] = useState([]);
-  const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
@@ -26,7 +25,7 @@ const ShortStayBooking = () => {
     phone: ''
   });
 
-  // Set default dates (today + 1 day for checkin, +3 days for checkout)
+  // Set default dates
   useEffect(() => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -41,12 +40,42 @@ const ShortStayBooking = () => {
     });
   }, []);
 
-  // Update end date when start date changes
-  const handleStartDateChange = (newStartDate: string) => {
+  // Simple currency formatter
+  const formatCurrency = (amount) => {
+    try {
+      const num = parseFloat(amount) || 0;
+      return `£${num.toFixed(2)}`;
+    } catch (e) {
+      return '£0.00';
+    }
+  };
+
+  // Calculate nights
+  const calculateNights = () => {
+    if (!searchParams.startDate || !searchParams.endDate) return 0;
+    const start = new Date(searchParams.startDate);
+    const end = new Date(searchParams.endDate);
+    return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  };
+
+  // Format date for display
+  const formatDisplayDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Handle start date change
+  const handleStartDateChange = (newStartDate) => {
     const startDate = new Date(newStartDate);
     const currentEndDate = new Date(searchParams.endDate);
     
-    // If end date is not after start date, set it to start date + 1 day
     if (currentEndDate <= startDate) {
       const newEndDate = new Date(startDate);
       newEndDate.setDate(newEndDate.getDate() + 1);
@@ -60,41 +89,18 @@ const ShortStayBooking = () => {
     }
   };
 
-  // Format date for display (dd/mm/yyyy)
-  const formatDisplayDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  // Get minimum date for end date (start date + 1 day)
-  const getMinEndDate = (): string => {
+  // Get minimum end date
+  const getMinEndDate = () => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
     minDate.setDate(minDate.getDate() + 1);
     return minDate.toISOString().split('T')[0];
   };
 
-  // Fetch buildings on component mount
-  useEffect(() => {
-    fetchBuildings();
-  }, []);
-
-  const fetchBuildings = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/availability/buildings`);
-      const data = await response.json();
-      if (data.success) {
-        setBuildings(data.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch buildings:', err);
-    }
-  };
-
+  // Search for availability
   const searchAvailability = async () => {
+    console.log('Starting search...');
+    
     if (!searchParams.startDate || !searchParams.endDate) {
       setError('Please select check-in and check-out dates');
       return;
@@ -110,21 +116,53 @@ const ShortStayBooking = () => {
         guests: searchParams.guests.toString()
       });
       
+      console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
+      
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
       const data = await response.json();
       
-      if (data.success) {
-        setAvailability(data.data);
+      console.log('Raw API response:', data);
+      
+      if (data.success && data.data) {
+        // Simple transformation - no complex filtering for now
+        const simpleData = data.data.map(property => ({
+          buildingId: property.buildingId || 0,
+          buildingName: property.buildingName || 'Unknown Building',
+          inventoryTypeId: property.inventoryTypeId || 0,
+          inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
+          rates: (property.rates || []).map(rate => ({
+            rateId: rate.rateId || 0,
+            rateName: rate.rateName || 'Standard Rate',
+            totalPrice: parseFloat(rate.totalPrice) || 0,
+            avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
+            nights: parseInt(rate.nights) || calculateNights()
+          }))
+        }));
+        
+        console.log('Transformed data:', simpleData);
+        setAvailability(simpleData);
       } else {
-        setError(data.error || 'Failed to search availability');
+        console.error('API returned error:', data);
+        setError(data.error || 'No results found');
       }
     } catch (err) {
+      console.error('Search error:', err);
       setError('Failed to connect to the server');
     } finally {
       setLoading(false);
     }
   };
 
+  // Select unit for booking
+  const selectUnit = (unit, rate) => {
+    setSelectedUnit({
+      ...unit,
+      selectedRate: rate
+    });
+    setShowBookingForm(true);
+  };
+
+  // Handle booking
   const handleBookingSubmit = async () => {
     if (!selectedUnit || !guestDetails.firstName || !guestDetails.lastName || !guestDetails.email) {
       setError('Please fill in all required fields');
@@ -172,30 +210,7 @@ const ShortStayBooking = () => {
     }
   };
 
-  const selectUnit = (unit, rate) => {
-    setSelectedUnit({
-      ...unit,
-      selectedRate: rate
-    });
-    setShowBookingForm(true);
-  };
-
-  const getBuildingName = (buildingId) => {
-    const building = buildings.find(b => b.id === buildingId);
-    return building ? building.name : `Building ${buildingId}`;
-  };
-
-  const formatCurrency = (amount, currency = 'GBP', symbol = '£') => {
-    return `${symbol}${amount.toFixed(2)}`;
-  };
-
-  const calculateNights = () => {
-    if (!searchParams.startDate || !searchParams.endDate) return 0;
-    const start = new Date(searchParams.startDate);
-    const end = new Date(searchParams.endDate);
-    return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-  };
-
+  // Booking confirmation screen
   if (bookingComplete) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -203,10 +218,10 @@ const ShortStayBooking = () => {
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed!</h2>
           <div className="space-y-2 text-gray-600">
-            <p><strong>Booking Reference:</strong> {bookingDetails.bookingReference}</p>
-            <p><strong>Guest:</strong> {bookingDetails.guestName}</p>
-            <p><strong>Check-in:</strong> {new Date(bookingDetails.checkIn).toLocaleDateString()}</p>
-            <p><strong>Check-out:</strong> {new Date(bookingDetails.checkOut).toLocaleDateString()}</p>
+            <p><strong>Booking Reference:</strong> {bookingDetails?.bookingReference}</p>
+            <p><strong>Guest:</strong> {bookingDetails?.guestName}</p>
+            <p><strong>Check-in:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</p>
+            <p><strong>Check-out:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</p>
           </div>
           <button
             onClick={() => {
@@ -241,7 +256,7 @@ const ShortStayBooking = () => {
                     type="date"
                     value={searchParams.startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]} // Can't select past dates
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -255,7 +270,7 @@ const ShortStayBooking = () => {
                     type="date"
                     value={searchParams.endDate}
                     onChange={(e) => setSearchParams({...searchParams, endDate: e.target.value})}
-                    min={getMinEndDate()} // End date must be after start date
+                    min={getMinEndDate()}
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -296,7 +311,7 @@ const ShortStayBooking = () => {
             </div>
           )}
 
-          {/* Available Units */}
+          {/* Search Results */}
           {availability.length > 0 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-800">Available Units ({availability.length})</h2>
@@ -308,7 +323,7 @@ const ShortStayBooking = () => {
                         <h3 className="text-xl font-semibold text-gray-800">{unit.inventoryTypeName}</h3>
                         <div className="flex items-center gap-2 text-gray-600 mt-1">
                           <MapPin className="h-4 w-4" />
-                          <span>{getBuildingName(unit.buildingId)}</span>
+                          <span>{unit.buildingName}</span>
                         </div>
                       </div>
                       <div className="text-right">
@@ -316,10 +331,10 @@ const ShortStayBooking = () => {
                         {unit.rates.length > 0 && (
                           <div className="mt-1">
                             <p className="text-2xl font-bold text-green-600">
-                              {formatCurrency(unit.rates[0]?.totalPrice || 0, unit.rates[0]?.currency, unit.rates[0]?.currencySymbol)}
+                              {formatCurrency(unit.rates[0].totalPrice)}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {formatCurrency(unit.rates[0]?.avgNightlyRate || 0, unit.rates[0]?.currency, unit.rates[0]?.currencySymbol)}/night
+                              {formatCurrency(unit.rates[0].avgNightlyRate)}/night
                             </p>
                           </div>
                         )}
@@ -328,15 +343,12 @@ const ShortStayBooking = () => {
                     
                     {unit.rates.length > 0 && (
                       <div className="space-y-3">
-                        <h4 className="font-medium text-gray-700">Short Stay Rates:</h4>
+                        <h4 className="font-medium text-gray-700">Available Rates:</h4>
                         {unit.rates.map((rate) => (
                           <div key={rate.rateId} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                             <div className="flex justify-between items-center">
                               <div className="flex-1">
                                 <h5 className="font-medium text-gray-800">{rate.rateName}</h5>
-                                {rate.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{rate.description}</p>
-                                )}
                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                                   <span>{rate.nights} nights</span>
                                   <span>Rate ID: {rate.rateId}</span>
@@ -344,10 +356,10 @@ const ShortStayBooking = () => {
                               </div>
                               <div className="text-right ml-4">
                                 <p className="text-2xl font-bold text-green-600">
-                                  {formatCurrency(rate?.totalPrice || 0, rate?.currency, rate?.currencySymbol)}
+                                  {formatCurrency(rate.totalPrice)}
                                 </p>
                                 <p className="text-sm text-gray-500">
-                                  {formatCurrency(rate?.avgNightlyRate || 0, rate?.currency, rate?.currencySymbol)}/night
+                                  {formatCurrency(rate.avgNightlyRate)}/night
                                 </p>
                                 <button
                                   onClick={() => selectUnit(unit, rate)}
@@ -379,13 +391,13 @@ const ShortStayBooking = () => {
                     <h4 className="font-medium text-gray-700 mb-2">Booking Summary</h4>
                     <div className="space-y-1 text-sm text-gray-600">
                       <p><strong>Unit:</strong> {selectedUnit.inventoryTypeName}</p>
-                      <p><strong>Building:</strong> {getBuildingName(selectedUnit.buildingId)}</p>
+                      <p><strong>Building:</strong> {selectedUnit.buildingName}</p>
                       <p><strong>Rate:</strong> {selectedUnit.selectedRate.rateName}</p>
                       <p><strong>Check-in:</strong> {formatDisplayDate(searchParams.startDate)}</p>
                       <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
                       <p><strong>Guests:</strong> {searchParams.guests}</p>
                       <p className="text-lg font-bold text-green-600">
-                        <strong>Total: {formatCurrency(selectedUnit?.selectedRate?.totalPrice || 0, selectedUnit?.selectedRate?.currency, selectedUnit?.selectedRate?.currencySymbol)}</strong>
+                        <strong>Total: {formatCurrency(selectedUnit.selectedRate.totalPrice)}</strong>
                       </p>
                     </div>
                   </div>
