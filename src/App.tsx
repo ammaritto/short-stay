@@ -389,7 +389,7 @@ const App: React.FC = () => {
           {/* Search Form */}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
             <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
-              <div className="w-full sm:col-span-1">
+              <div className="w-full sm:col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -404,7 +404,7 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-              <div className="w-full sm:col-span-1">
+              <div className="w-full sm:col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
