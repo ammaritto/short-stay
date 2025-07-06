@@ -268,11 +268,17 @@ const App: React.FC = () => {
             }))
           };
         }).filter((property: any) => {
-          // Filter by selected buildings if any are selected
+          // First check if property has rates
+          const hasRates = property.rates && property.rates.length > 0;
+          if (!hasRates) return false;
+          
+          // Then filter by selected buildings if any are selected
           if (searchParams.buildings.length > 0) {
             return searchParams.buildings.includes(property.buildingId);
           }
-          return property.rates && property.rates.length > 0;
+          
+          // If no buildings selected, show all properties with rates
+          return true;
         });
         
         console.log('Transformed data:', transformedData);
@@ -471,7 +477,7 @@ const App: React.FC = () => {
                   {showBuildingDropdown && (
                     <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                       <div className="p-2">
-                        <div className="mb-2">
+                        <div className="mb-2 border-b border-gray-100 pb-2">
                           <button
                             onClick={() => {
                               setSearchParams(prev => ({ ...prev, buildings: [] }));
@@ -480,9 +486,9 @@ const App: React.FC = () => {
                                 setHasSearched(false);
                               }
                             }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded-lg"
+                            className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg font-medium"
                           >
-                            Clear All
+                            Clear All Filters
                           </button>
                         </div>
                         {buildings.map((building) => (
