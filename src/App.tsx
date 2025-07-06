@@ -398,7 +398,7 @@ const App: React.FC = () => {
                     value={searchParams.startDate}
                     onChange={(e) => handleStartDateChange(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full h-12 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
                   />
                 </div>
               </div>
@@ -419,7 +419,7 @@ const App: React.FC = () => {
                       }
                     }}
                     min={getMinEndDate()}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                    className="w-full h-12 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
                   />
                 </div>
               </div>
@@ -438,7 +438,7 @@ const App: React.FC = () => {
                         setHasSearched(false);
                       }
                     }}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none"
+                    className="w-full h-12 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
                   >
                     {[1,2].map(num => (
                       <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
@@ -452,7 +452,7 @@ const App: React.FC = () => {
                 <button
                   onClick={searchAvailability}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium"
                 >
                   <Search className="h-5 w-5" />
                   {loading ? 'Searching...' : 'Search'}
