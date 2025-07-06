@@ -393,10 +393,11 @@ const App: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">{calculateNights()} nights</p>
+                        <p className="text-xs text-gray-400">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</p>
                         {unit.rates.length > 0 && (
-                          <div className="mt-1">
+                          <div className="mt-2">
                             <p className="text-2xl font-bold text-green-600">
-                              {formatCurrency(unit.rates[0].totalPrice)}
+                              {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
                             </p>
                             <p className="text-sm text-gray-500">
                               {formatCurrency(unit.rates[0].avgNightlyRate)}/night
@@ -408,30 +409,27 @@ const App: React.FC = () => {
                     
                     {unit.rates.length > 0 && (
                       <div className="space-y-3">
-                        <h4 className="font-medium text-gray-700">Short Stay Rates:</h4>
                         {unit.rates.map((rate) => (
-                          <div key={rate.rateId} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                          <div key={rate.rateId} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors bg-white shadow-sm">
                             <div className="flex justify-between items-center">
                               <div className="flex-1">
-                                <h5 className="font-medium text-gray-800">{rate.rateName}</h5>
-                                {rate.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{rate.description}</p>
-                                )}
-                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                  <span>{rate.nights} nights</span>
-                                  <span>Rate ID: {rate.rateId}</span>
+                                <h5 className="font-medium text-gray-800 text-lg">{rate.rateName}</h5>
+                                <div className="flex items-center gap-3 mt-2 text-sm text-gray-500">
+                                  <span className="font-medium">{rate.nights} nights</span>
+                                  <span className="text-xs">•</span>
+                                  <span className="text-xs">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</span>
                                 </div>
                               </div>
-                              <div className="text-right ml-4">
-                                <p className="text-2xl font-bold text-green-600">
-                                  {formatCurrency(rate.totalPrice)}
+                              <div className="text-right ml-6">
+                                <p className="text-3xl font-bold text-green-600 mb-1">
+                                  {formatCurrency(rate.avgNightlyRate * calculateNights())}
                                 </p>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 mb-3">
                                   {formatCurrency(rate.avgNightlyRate)}/night
                                 </p>
                                 <button
                                   onClick={() => selectUnit(unit, rate)}
-                                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                                 >
                                   Book Now
                                 </button>
@@ -465,7 +463,7 @@ const App: React.FC = () => {
                       <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
                       <p><strong>Guests:</strong> {searchParams.guests}</p>
                       <p className="text-lg font-bold text-green-600">
-                        <strong>Total: {formatCurrency(selectedUnit.selectedRate.totalPrice)}</strong>
+                        <strong>Total: {formatCurrency(selectedUnit.selectedRate.avgNightlyRate * calculateNights())}</strong>
                       </p>
                     </div>
                   </div>
