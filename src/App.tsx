@@ -517,6 +517,7 @@ const App: React.FC = () => {
                             type="text"
                             value={guestDetails.firstName}
                             onChange={(e) => setGuestDetails({...guestDetails, firstName: e.target.value})}
+                            placeholder="Enter your first name"
                             className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                           />
                         </div>
@@ -530,6 +531,7 @@ const App: React.FC = () => {
                             type="text"
                             value={guestDetails.lastName}
                             onChange={(e) => setGuestDetails({...guestDetails, lastName: e.target.value})}
+                            placeholder="Enter your last name"
                             className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                           />
                         </div>
@@ -544,6 +546,7 @@ const App: React.FC = () => {
                           type="email"
                           value={guestDetails.email}
                           onChange={(e) => setGuestDetails({...guestDetails, email: e.target.value})}
+                          placeholder="Enter your email address"
                           className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                         />
                       </div>
@@ -557,6 +560,7 @@ const App: React.FC = () => {
                           type="tel"
                           value={guestDetails.phone || ''}
                           onChange={(e) => setGuestDetails({...guestDetails, phone: e.target.value})}
+                          placeholder="Enter your phone number (optional)"
                           className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
                         />
                       </div>
