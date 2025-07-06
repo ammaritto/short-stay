@@ -555,30 +555,30 @@ const App: React.FC = () => {
                             <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
                               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
                                 <div className="flex-1">
-                                  <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-gray-500 mb-2">
-                                    <span className="font-medium bg-gray-100 px-2 lg:px-3 py-1 rounded-full">{calculateNights()} nights</span>
-                                    <span className="text-xs text-gray-400 hidden lg:inline">•</span>
-                                    <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 text-xs lg:text-sm">
-                                      <span className="font-medium">From:</span>
-                                      <span>{formatDateWithDay(searchParams.startDate)}</span>
-                                      <span className="font-medium lg:ml-2">To:</span>
-                                      <span>{formatDateWithDay(searchParams.endDate)}</span>
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">{calculateNights()} nights</span>
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      <span className="font-medium">From:</span> {formatDateWithDay(searchParams.startDate)}
+                                      <br />
+                                      <span className="font-medium">To:</span> {formatDateWithDay(searchParams.endDate)}
                                     </div>
                                   </div>
                                 </div>
-                                <div className="text-left lg:text-right lg:ml-8">
-                                  <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+                                <div className="text-right flex flex-col items-end">
+                                  <p className="text-3xl font-bold text-gray-900 mb-1">
                                     {formatCurrency(rate.avgNightlyRate * calculateNights())}
                                   </p>
-                                  <p className="text-xs lg:text-sm text-gray-500 mb-1">
+                                  <p className="text-sm text-gray-500 mb-1">
                                     {formatCurrency(rate.avgNightlyRate)}/night
                                   </p>
-                                  <p className="text-xs text-gray-400 mb-3 lg:mb-4">
+                                  <p className="text-xs text-gray-400 mb-4">
                                     VAT included
                                   </p>
                                   <button
                                     onClick={() => selectUnit(unit, rate)}
-                                    className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 lg:px-8 py-2 lg:py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm lg:text-base"
+                                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                   >
                                     Book Now
                                   </button>
