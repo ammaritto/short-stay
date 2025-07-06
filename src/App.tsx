@@ -269,18 +269,23 @@ if (data.success && data.data) {
   });
 }
         
-        console.log('Transformed data:', transformedData);
-        setAvailability(transformedData);
-      } else {
-        console.error('API returned error:', data);
-        setError(data.error || 'No WEB rates available');
-      }
-    } catch (err) {
-      console.error('Search error:', err);
-      setError('Failed to connect to the server');
-    } finally {
-      setLoading(false);
-    }
+try {
+  // ... your existing code above this point
+
+  if (data.success && data.data) {
+    // ... your data transformation code
+    console.log('Transformed data:', transformedData);
+    setAvailability(transformedData);
+  } else {
+    console.error('API returned error:', data);
+    setError(data.error || 'No WEB rates available');
+  }
+} catch (err) {
+  console.error('Search error:', err);
+  setError('Failed to connect to the server');
+} finally {
+  setLoading(false);
+}
   };
 
   // Select unit for booking
