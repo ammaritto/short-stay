@@ -158,14 +158,14 @@ const App: React.FC = () => {
     
     try {
       const params = new URLSearchParams({
-        dateFrom: searchParams.startDate,
-        dateTo: searchParams.endDate,
-        inventoryType: 'UNIT_TYPE'
+        startDate: searchParams.startDate,
+        endDate: searchParams.endDate,
+        guests: searchParams.guests.toString()
       });
       
-      console.log('Search URL:', `${API_BASE_URL}/v3/availabilities?${params}`);
+      console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
       
-      const response = await fetch(`${API_BASE_URL}/v3/availabilities?${params}`);
+      const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
       const data = await response.json();
       
       console.log('Raw API response:', data);
