@@ -173,11 +173,13 @@ const App: React.FC = () => {
       if (data.success && data.data) {
         // Transform data and filter for short stay rates
         const transformedData = data.data.map((property: any) => {
-          // Filter rates to only show "Short stay rates"
-          const shortStayRates = (property.rates || []).filter((rate: any) => 
-            rate.rateName?.toLowerCase().includes('short stay') || 
-            rate.description?.toLowerCase().includes('short stay')
-          );
+          // Filter rates to only show "Short stay rates" with valid pricing
+          const shortStayRates = (property.rates || []).filter((rate: any) => {
+            const hasShortStayName = rate.rateName?.toLowerCase().includes('short stay') || 
+                                   rate.description?.toLowerCase().includes('short stay');
+            const hasValidPrice = parseFloat(rate.avgNightlyRate) > 0;
+            return hasShortStayName && hasValidPrice;
+          });
 
           return {
             buildingId: property.buildingId || 0,
@@ -187,8 +189,8 @@ const App: React.FC = () => {
             rates: shortStayRates.map((rate: any) => ({
               rateId: rate.rateId || 0,
               rateName: rate.rateName || 'Short Stay Rate',
-              currency: rate.currency || 'GBP',
-              currencySymbol: rate.currencySymbol || '£',
+              currency: rate.currency || 'SEK',
+              currencySymbol: rate.currencySymbol || 'SEK',
               totalPrice: parseFloat(rate.totalPrice) || 0,
               avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
               nights: parseInt(rate.nights) || calculateNights(),
