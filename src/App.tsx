@@ -550,9 +550,9 @@ const App: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Right side - Pricing (outside the gray box) */}
+                        {/* Right side - Pricing (outside the gray box on desktop, inside on mobile) */}
                         {unit.rates.length > 0 && unit.rates[0] && (
-                          <div className="text-right mt-4 lg:mt-0">
+                          <div className="text-left lg:text-right mb-6 lg:mb-0 lg:mt-0">
                             <p className="text-3xl font-bold text-gray-900 mb-1">
                               {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
                             </p>
@@ -568,14 +568,14 @@ const App: React.FC = () => {
                       
                       {/* Rates Section - Gray box with dates and button */}
                       {unit.rates.length > 0 && (
-                        <div className="space-y-4 mt-4">
+                        <div className="space-y-4">
                           {unit.rates.map((rate) => (
                             <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
                               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
                                 <div className="flex-1">
-                                  <div className="flex flex-col gap-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">{calculateNights()} nights</span>
+                                  <div className="flex flex-col gap-4">
+                                    <div>
+                                      <span className="inline-block font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">{calculateNights()} nights</span>
                                     </div>
                                     <div className="text-sm text-gray-600">
                                       <span className="font-medium">From:</span> {formatDateWithDay(searchParams.startDate)}
@@ -587,7 +587,7 @@ const App: React.FC = () => {
                                 <div className="flex items-center">
                                   <button
                                     onClick={() => selectUnit(unit, rate)}
-                                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                    className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                   >
                                     Book Now
                                   </button>
