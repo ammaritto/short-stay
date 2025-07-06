@@ -171,11 +171,11 @@ const App: React.FC = () => {
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-        // Transform data and filter for rates with "WEB" in rateCode
+        // Transform data and filter for rates with "WEB" in rateName
         const transformedData = data.data.map((property: any) => {
-          // Filter rateAvailabilities to only show rates with "WEB" in rateCode
-          const webRates = (property.rateAvailabilities || []).filter((rate: any) => {
-            return rate.rateCode?.toLowerCase().includes('web');
+          // Filter rates to only show rates with "WEB" in rateName
+          const webRates = (property.rates || []).filter((rate: any) => {
+            return rate.rateName?.toLowerCase().includes('web');
           });
 
           return {
@@ -185,11 +185,11 @@ const App: React.FC = () => {
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: webRates.map((rate: any) => ({
               rateId: rate.rateId || 0,
-              rateName: rate.shortName || rate.description || 'Rate',
-              currency: rate.currencyCode || 'SEK',
+              rateName: rate.rateName || 'Rate',
+              currency: rate.currency || 'SEK',
               currencySymbol: rate.currencySymbol || 'SEK',
-              totalPrice: parseFloat(rate.totals?.gross) || 0,
-              avgNightlyRate: parseFloat(rate.avgRate) || 0,
+              totalPrice: parseFloat(rate.totalPrice) || 0,
+              avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
               nights: parseInt(rate.nights) || calculateNights(),
               description: rate.description || ''
             }))
