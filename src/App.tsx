@@ -451,7 +451,7 @@ const App: React.FC = () => {
                 <button
                   onClick={searchAvailability}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <Search className="h-5 w-5" />
                   {loading ? 'Searching...' : 'Search'}
@@ -461,7 +461,7 @@ const App: React.FC = () => {
             
             {/* Community Filter Buttons */}
             <div className="border-t border-gray-100 pt-6">
-              <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
+              <h3 className="text-base font-medium text-gray-800 mb-3">Filter by Community</h3>
               <div className="flex flex-wrap gap-3 items-center">
                 {communities.map((community) => (
                   <button
@@ -521,9 +521,9 @@ const App: React.FC = () => {
                     
                     {/* Content - Bottom on mobile, Right on desktop */}
                     <div className="flex-1 p-6 lg:p-8 flex flex-col">
-                      <div className="flex-1">
+                      <div className="flex flex-1">
                         <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
-                        <div className="flex items-center gap-2 text-gray-600 mb-6">
+                        <div className="flex items-center gap-2 text-gray-600 mb-4">
                           <MapPin className="h-4 w-4" />
                           <span className="text-sm">{unit.buildingName}</span>
                         </div>
@@ -543,11 +543,14 @@ const App: React.FC = () => {
                                   </div>
                                 </div>
                                 <div className="text-left lg:text-right lg:ml-8">
-                                  <p className="text-2xl lg:text-3xl font-light text-gray-900 mb-1">
+                                  <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
                                     {formatCurrency(rate.avgNightlyRate * calculateNights())}
                                   </p>
-                                  <p className="text-xs lg:text-sm text-gray-500 mb-3 lg:mb-4">
+                                  <p className="text-xs lg:text-sm text-gray-500 mb-1">
                                     {formatCurrency(rate.avgNightlyRate)}/night
+                                  </p>
+                                  <p className="text-xs text-gray-400 mb-3 lg:mb-4">
+                                    VAT included
                                   </p>
                                   <button
                                     onClick={() => selectUnit(unit, rate)}
