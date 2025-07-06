@@ -386,80 +386,81 @@ const App: React.FC = () => {
           <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-2 text-center">Short Stay Booking</h1>
           <p className="text-gray-600 text-center mb-6 md:mb-8">Find your perfect studio in Stockholm</p>
           
-          {/* Search Form */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
-            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <input
-                    type="date"
-                    value={searchParams.startDate}
-                    onChange={(e) => handleStartDateChange(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full h-12 pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-                    style={{ paddingRight: '3rem' }}
-                  />
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <input
-                    type="date"
-                    value={searchParams.endDate}
-                    onChange={(e) => {
-                      setSearchParams({...searchParams, endDate: e.target.value});
-                      // Clear results when dates change
-                      if (hasSearched) {
-                        setAvailability([]);
-                        setHasSearched(false);
-                      }
-                    }}
-                    min={getMinEndDate()}
-                    className="w-full h-12 pl-10 pr-6 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-                  />
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <select
-                    value={searchParams.guests}
-                    onChange={(e) => {
-                      setSearchParams({...searchParams, guests: parseInt(e.target.value)});
-                      // Clear results when guests change
-                      if (hasSearched) {
-                        setAvailability([]);
-                        setHasSearched(false);
-                      }
-                    }}
-                    className="w-full h-12 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
-                  >
-                    {[1,2].map(num => (
-                      <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
-                <button
-                  onClick={searchAvailability}
-                  disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium"
-                >
-                  <Search className="h-5 w-5" />
-                  {loading ? 'Searching...' : 'Search'}
-                </button>
-              </div>
-            </div>
+{/* Search Form */}
+<div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 md:mb-8">
+  <div className="flex flex-col space-y-4 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0 md:grid-cols-4 md:gap-6">
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+      <div className="relative">
+        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <input
+          type="date"
+          value={searchParams.startDate}
+          onChange={(e) => handleStartDateChange(e.target.value)}
+          min={new Date().toISOString().split('T')[0]}
+          className="w-full h-12 pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
+          style={{ paddingRight: '3rem' }}
+        />
+      </div>
+    </div>
+    
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+      <div className="relative">
+        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <input
+          type="date"
+          value={searchParams.endDate}
+          onChange={(e) => {
+            setSearchParams({...searchParams, endDate: e.target.value});
+            // Clear results when dates change
+            if (hasSearched) {
+              setAvailability([]);
+              setHasSearched(false);
+            }
+          }}
+          min={getMinEndDate()}
+          className="w-full h-12 pl-10 pr-6 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
+        />
+      </div>
+    </div>
+    
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
+      <div className="relative">
+        <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <select
+          value={searchParams.guests}
+          onChange={(e) => {
+            setSearchParams({...searchParams, guests: parseInt(e.target.value)});
+            // Clear results when guests change
+            if (hasSearched) {
+              setAvailability([]);
+              setHasSearched(false);
+            }
+          }}
+          className="w-full h-12 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
+        >
+          {[1,2].map(num => (
+            <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+    
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+      <button
+        onClick={searchAvailability}
+        disabled={loading}
+        className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium"
+      >
+        <Search className="h-5 w-5" />
+        {loading ? 'Searching...' : 'Search'}
+      </button>
+    </div>
+  </div>
+</div>
             
             {/* Community Filter Buttons */}
             <div className="border-t border-gray-100 pt-4 md:pt-6">
