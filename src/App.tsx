@@ -399,7 +399,7 @@ const App: React.FC = () => {
                     onChange={(e) => handleStartDateChange(e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
                     className="w-full h-12 pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-                    style={{ paddingRight: '3rem' }}
+                    style={{ paddingRight: '3rem', textAlign: 'left' }}
                   />
                 </div>
               </div>
