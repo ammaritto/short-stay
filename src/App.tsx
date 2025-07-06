@@ -521,7 +521,7 @@ const App: React.FC = () => {
                     
                     {/* Content - Bottom on mobile, Right on desktop */}
                     <div className="flex-1 p-6 lg:p-8 flex flex-col">
-                      <div className="flex flex-1">
+                      <div className="flex-1">
                         <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
                         <div className="flex items-center gap-2 text-gray-600 mb-4">
                           <MapPin className="h-4 w-4" />
