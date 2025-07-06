@@ -171,24 +171,16 @@ const App: React.FC = () => {
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-        // Transform data and filter for short stay rates
+        // Transform data without filtering
         const transformedData = data.data.map((property: any) => {
-          // Filter rates to only show "Short stay rates" with valid pricing
-          const shortStayRates = (property.rates || []).filter((rate: any) => {
-            const hasShortStayName = rate.rateName?.toLowerCase().includes('short stay') || 
-                                   rate.description?.toLowerCase().includes('short stay');
-            const hasValidPrice = parseFloat(rate.avgNightlyRate) > 0;
-            return hasShortStayName && hasValidPrice;
-          });
-
           return {
             buildingId: property.buildingId || 0,
             buildingName: property.buildingName || 'Unknown Building',
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-            rates: shortStayRates.map((rate: any) => ({
+            rates: (property.rates || []).map((rate: any) => ({
               rateId: rate.rateId || 0,
-              rateName: rate.rateName || 'Short Stay Rate',
+              rateName: rate.rateName || 'Rate',
               currency: rate.currency || 'SEK',
               currencySymbol: rate.currencySymbol || 'SEK',
               totalPrice: parseFloat(rate.totalPrice) || 0,
@@ -197,13 +189,13 @@ const App: React.FC = () => {
               description: rate.description || ''
             }))
           };
-        }).filter((property: any) => property.rates && property.rates.length > 0);
+        });
         
         console.log('Transformed data:', transformedData);
         setAvailability(transformedData);
       } else {
         console.error('API returned error:', data);
-        setError(data.error || 'No short stay rates available');
+        setError(data.error || 'No availability found');
       }
     } catch (err) {
       console.error('Search error:', err);
