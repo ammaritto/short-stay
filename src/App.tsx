@@ -479,38 +479,39 @@ const App: React.FC = () => {
 </div>
             
             {/* Community Filter Buttons with better mobile spacing */}
-<div className="border-t border-gray-100 pt-6 md:pt-6">
-  <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
-  <div className="flex flex-row gap-3 items-center flex-wrap">
-    {communities.map((community) => (
-      <button
-        key={community.id}
-        onClick={() => toggleCommunity(community.id)}
-        className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
-          searchParams.communities.includes(community.id)
-            ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
-            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
-        }`}
-      >
-        {community.name}
-      </button>
-    ))}
-    {searchParams.communities.length > 0 && (
-      <button
-        onClick={() => {
-          setSearchParams(prev => ({ ...prev, communities: [] }));
-          if (hasSearched) {
-            setAvailability([]);
-            setHasSearched(false);
-          }
-        }}
-        className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
-      >
-        Clear All
-      </button>
-    )}
-  </div>
-</div>
+            <div className="border-t border-gray-100 pt-6 md:pt-6">
+              <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                {communities.map((community) => (
+                  <button
+                    key={community.id}
+                    onClick={() => toggleCommunity(community.id)}
+                    className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
+                      searchParams.communities.includes(community.id)
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
+                    }`}
+                  >
+                    {community.name}
+                  </button>
+                ))}
+                {searchParams.communities.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchParams(prev => ({ ...prev, communities: [] }));
+                      if (hasSearched) {
+                        setAvailability([]);
+                        setHasSearched(false);
+                      }
+                    }}
+                    className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
@@ -710,8 +711,10 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
     </div>
   );
+};
 
 export default App;
