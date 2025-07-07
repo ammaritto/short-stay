@@ -479,7 +479,7 @@ const App: React.FC = () => {
 </div>
             
             {/* Community Filter Buttons with better mobile spacing */}
- <div className="border-t border-gray-100 pt-6 md:pt-6">
+<div className="border-t border-gray-100 pt-6 md:pt-6">
   <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
   <div className="flex flex-row gap-3 items-center flex-wrap">
     {communities.map((community) => (
