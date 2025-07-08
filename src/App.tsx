@@ -1,4 +1,15 @@
-import React, { useState, useEffect } from 'react';
+// Format date for display (dd/mm/yyyy) - keep this for other uses
+  const formatDisplayDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return dateString;
+    }
+  };import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
 
@@ -138,14 +149,17 @@ const App: React.FC = () => {
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  // Format date for display (dd/mm/yyyy)
-  const formatDisplayDate = (dateString: string): string => {
+  // Format date with weekday (e.g., "Monday, 07 Jul 2025")
+  const formatDateWithWeekday = (dateString: string): string => {
     try {
       const date = new Date(dateString);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      };
+      return date.toLocaleDateString('en-GB', options);
     } catch (e) {
       return dateString;
     }
@@ -675,10 +689,14 @@ const App: React.FC = () => {
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <h4 className="font-medium text-gray-900">{rate.rateName}</h4>
-                                {rate.description && (
-                                  <p className="text-sm text-gray-600">{rate.description}</p>
-                                )}
+                                <div className="text-sm text-gray-600 mt-1">
+                                  <div>{formatDateWithWeekday(searchParams.startDate)}</div>
+                                  <div>{formatDateWithWeekday(searchParams.endDate)}</div>
+                                </div>
                                 <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
+                                {rate.description && (
+                                  <p className="text-sm text-gray-600 mt-1">{rate.description}</p>
+                                )}
                               </div>
                               <div className="text-right">
                                 <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
