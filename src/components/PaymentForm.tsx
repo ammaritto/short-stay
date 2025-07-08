@@ -197,7 +197,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               
               <div className="flex justify-between">
                 <span className="text-gray-600">Nights:</span>
-                <span className="font-medium">{bookingDetails.nights}</span>
+                <span className="font-medium">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</span>
               </div>
               
               <div className="border-t pt-3 mt-3">
