@@ -214,7 +214,6 @@ const App: React.FC = () => {
 
     setLoading(true);
     setError('');
-    // Don't set hasSearched to true until we get results
     
     try {
       const params = new URLSearchParams({
@@ -231,6 +230,8 @@ const App: React.FC = () => {
       const data = await response.json();
       
       if (data.success && data.data) {
+        const searchNights = calculateNights(); // Calculate nights based on current search params
+        
         const transformedData = data.data.map((property: any) => {
           return {
             buildingId: property.buildingId || 0,
@@ -238,9 +239,8 @@ const App: React.FC = () => {
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: (property.rates || []).map((rate: any) => {
-              const nights = calculateNights();
               const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
-              const totalPrice = avgNightlyRate * nights; // Calculate total as nights x avg rate
+              const totalPrice = avgNightlyRate * searchNights; // Use searchNights instead of dynamic calculation
               
               return {
                 rateId: rate.rateId || 0,
@@ -249,7 +249,7 @@ const App: React.FC = () => {
                 currencySymbol: rate.currencySymbol || 'SEK',
                 totalPrice: totalPrice,
                 avgNightlyRate: avgNightlyRate,
-                nights: nights,
+                nights: searchNights, // Store the nights from when search was performed
                 description: rate.description || ''
               };
             })
@@ -257,17 +257,20 @@ const App: React.FC = () => {
         });
         
         setAvailability(transformedData);
-        setHasSearched(true); // Only set this after successful search
+        setLastSearchParams({ ...searchParams }); // Store the search params that generated these results
+        setHasSearched(true);
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
-        setHasSearched(true); // Set this even for no results
+        setLastSearchParams({ ...searchParams });
+        setHasSearched(true);
       }
     } catch (err) {
       console.error('Search error:', err);
       setError('Failed to search availability');
       setAvailability([]);
-      setHasSearched(true); // Set this even for errors
+      setLastSearchParams({ ...searchParams });
+      setHasSearched(true);
     } finally {
       setLoading(false);
     }
