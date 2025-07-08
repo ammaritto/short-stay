@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
+import PaymentForm from './components/PaymentForm';
 
 // TypeScript interfaces
 interface SearchParams {
@@ -39,6 +40,14 @@ interface GuestDetails {
   phone?: string;
 }
 
+interface PaymentDetails {
+  cardNumber: string;
+  expiryMonth: string;
+  expiryYear: string;
+  cvv: string;
+  cardholderName: string;
+}
+
 interface BookingDetails {
   bookingId: number;
   bookingReference: string;
@@ -46,10 +55,12 @@ interface BookingDetails {
   guestName: string;
   checkIn: string;
   checkOut: string;
+  paymentReference?: string;
+  paymentAmount?: number;
 }
 
 const App: React.FC = () => {
-  // Your existing state declarations
+  // Existing state
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
   const [guestDetails, setGuestDetails] = useState<GuestDetails>({
     firstName: '',
@@ -68,10 +79,11 @@ const App: React.FC = () => {
     guests: 1,
     communities: []
   });
-
-  // Additional state for search results
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // NEW: Payment flow state
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   // Community data from the API
   const communities = [
@@ -85,7 +97,6 @@ const App: React.FC = () => {
       38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
       11: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03be9ae7287d722a74fc7_1-p-1600.png',
       10: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03bc52fbd20a5ad097a7c_1-p-1600.jpg',
-      // Add more mappings here as needed
     };
     
     return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
@@ -140,56 +151,14 @@ const App: React.FC = () => {
     }
   };
 
-  // Format date with day name (e.g., "Monday, 07 Jul 2025")
-  const formatDateWithDay = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
-      const dayName = days[date.getDay()];
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = months[date.getMonth()];
-      const year = date.getFullYear();
-      
-      return `${dayName}, ${day} ${month} ${year}`;
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  // Handle start date change
-  const handleStartDateChange = (newStartDate: string) => {
-    const startDate = new Date(newStartDate);
-    const currentEndDate = new Date(searchParams.endDate);
-    
-    if (currentEndDate <= startDate) {
-      const newEndDate = new Date(startDate);
-      newEndDate.setDate(newEndDate.getDate() + 1);
-      setSearchParams({
-        ...searchParams,
-        startDate: newStartDate,
-        endDate: newEndDate.toISOString().split('T')[0]
-      });
-    } else {
-      setSearchParams({...searchParams, startDate: newStartDate});
-    }
-    // Clear results when dates change
-    if (hasSearched) {
-      setAvailability([]);
-      setHasSearched(false);
-    }
-  };
-
-  // Handle community selection
-  const toggleCommunity = (communityId: number) => {
+  // Toggle community filter
+  const toggleCommunity = (communityId: number): void => {
     setSearchParams(prev => ({
       ...prev,
       communities: prev.communities.includes(communityId)
         ? prev.communities.filter(id => id !== communityId)
         : [...prev.communities, communityId]
     }));
-    // Clear results when communities change
     if (hasSearched) {
       setAvailability([]);
       setHasSearched(false);
@@ -206,8 +175,6 @@ const App: React.FC = () => {
 
   // Search for availability
   const searchAvailability = async (): Promise<void> => {
-    console.log('Starting search...');
-    
     if (!searchParams.startDate || !searchParams.endDate) {
       setError('Please select check-in and check-out dates');
       return;
@@ -215,7 +182,7 @@ const App: React.FC = () => {
 
     setLoading(true);
     setError('');
-    setHasSearched(true); // Mark that user has performed a search
+    setHasSearched(true);
     
     try {
       const params = new URLSearchParams({
@@ -224,17 +191,12 @@ const App: React.FC = () => {
         guests: searchParams.guests.toString()
       });
       
-      // Add community filter if communities are selected
       if (searchParams.communities.length > 0) {
         params.append('communities', searchParams.communities.join(','));
       }
       
-      console.log('Search URL:', `${API_BASE_URL}/availability/search?${params}`);
-      
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
       const data = await response.json();
-      
-      console.log('Raw API response:', data);
       
       if (data.success && data.data) {
         const transformedData = data.data.map((property: any) => {
@@ -245,51 +207,54 @@ const App: React.FC = () => {
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: (property.rates || []).map((rate: any) => ({
               rateId: rate.rateId || 0,
-              rateName: rate.rateName || 'Rate',
+              rateName: rate.rateName || 'Standard Rate',
               currency: rate.currency || 'SEK',
               currencySymbol: rate.currencySymbol || 'SEK',
-              totalPrice: parseFloat(rate.totalPrice) || 0,
-              avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
-              nights: parseInt(rate.nights) || calculateNights(),
+              totalPrice: parseFloat(rate.totalPrice || '0'),
+              avgNightlyRate: parseFloat(rate.avgNightlyRate || '0'),
+              nights: rate.nights || calculateNights(),
               description: rate.description || ''
             }))
           };
-        }).filter((property: any) => {
-          if (searchParams.communities.length > 0) {
-            return searchParams.communities.includes(property.buildingId);
-          }
-          return true;
         });
         
-        console.log('Transformed data:', transformedData);
         setAvailability(transformedData);
       } else {
-        console.error('API returned error:', data);
-        setError(data.error || 'No availability found');
+        setError(data.message || 'No availability found');
+        setAvailability([]);
       }
     } catch (err) {
       console.error('Search error:', err);
-      setError('Failed to connect to the server');
+      setError('Failed to search availability');
+      setAvailability([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Select unit for booking
-  const selectUnit = (unit: Unit, rate: Rate) => {
-    setSelectedUnit({
-      ...unit,
-      selectedRate: rate
-    });
+  // Select unit and rate
+  const selectUnit = (unit: Unit, rate: Rate): void => {
+    setSelectedUnit({ ...unit, selectedRate: rate });
     setShowBookingForm(true);
   };
 
-  // Your existing booking submit function
-  const handleBookingSubmit = async (): Promise<void> => {
-    if (!selectedUnit || !guestDetails.firstName || !guestDetails.lastName || !guestDetails.email) {
+  // NEW: Handle guest details submission (now goes to payment)
+  const handleGuestDetailsSubmit = (e: React.FormEvent): void => {
+    e.preventDefault();
+    
+    if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email) {
       setError('Please fill in all required fields');
       return;
     }
+
+    setError('');
+    setShowBookingForm(false);
+    setShowPaymentForm(true);
+  };
+
+  // NEW: Handle payment submission
+  const handlePaymentSubmit = async (paymentDetails: PaymentDetails): Promise<void> => {
+    if (!selectedUnit) return;
 
     setLoading(true);
     setError('');
@@ -300,17 +265,25 @@ const App: React.FC = () => {
         stayDetails: {
           startDate: searchParams.startDate,
           endDate: searchParams.endDate,
-          inventoryTypeId: parseInt(selectedUnit.inventoryTypeId.toString()),
-          rateId: parseInt(selectedUnit.selectedRate.rateId.toString()),
-          adults: parseInt(searchParams.guests.toString()),
-          children: 0,
-          infants: 0
+          guests: searchParams.guests
+        },
+        unitDetails: {
+          rateId: selectedUnit.selectedRate.rateId,
+          inventoryTypeId: selectedUnit.inventoryTypeId
+        },
+        paymentDetails: {
+          amount: selectedUnit.selectedRate.totalPrice,
+          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''), // Remove spaces
+          cardholderName: paymentDetails.cardholderName,
+          expiryMonth: paymentDetails.expiryMonth,
+          expiryYear: paymentDetails.expiryYear,
+          cvv: paymentDetails.cvv
         }
       };
 
-      console.log('Creating booking with data:', bookingData);
+      console.log('Creating booking with payment:', bookingData);
 
-      const response = await fetch(`${API_BASE_URL}/booking/create`, {
+      const response = await fetch(`${API_BASE_URL}/booking/create-with-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -318,26 +291,64 @@ const App: React.FC = () => {
         body: JSON.stringify(bookingData),
       });
 
-      console.log('Booking response status:', response.status);
-      
       const data = await response.json();
-      console.log('Booking response data:', data);
       
       if (data.success) {
         setBookingDetails(data.data);
         setBookingComplete(true);
-        setShowBookingForm(false);
+        setShowPaymentForm(false);
       } else {
-        console.error('Booking failed:', data);
-        setError(data.error || 'Failed to create booking');
+        console.error('Booking with payment failed:', data);
+        setError(data.message || 'Failed to process payment and create booking');
       }
     } catch (err) {
-      console.error('Booking error:', err);
-      setError('Failed to create booking');
+      console.error('Payment error:', err);
+      setError('Failed to process payment');
     } finally {
       setLoading(false);
     }
   };
+
+  // NEW: Handle back from payment form
+  const handleBackFromPayment = (): void => {
+    setShowPaymentForm(false);
+    setShowBookingForm(true);
+  };
+
+  // Reset to search
+  const resetToSearch = (): void => {
+    setBookingComplete(false);
+    setShowPaymentForm(false);
+    setShowBookingForm(false);
+    setSelectedUnit(null);
+    setGuestDetails({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: ''
+    });
+    setError('');
+  };
+
+  // NEW: Show payment form
+  if (showPaymentForm && selectedUnit) {
+    return (
+      <PaymentForm
+        totalAmount={selectedUnit.selectedRate.totalPrice}
+        currency={selectedUnit.selectedRate.currency}
+        onPaymentSubmit={handlePaymentSubmit}
+        onBack={handleBackFromPayment}
+        loading={loading}
+        bookingDetails={{
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+          checkIn: searchParams.startDate,
+          checkOut: searchParams.endDate,
+          propertyName: `${selectedUnit.buildingName} - ${selectedUnit.inventoryTypeName}`,
+          nights: calculateNights()
+        }}
+      />
+    );
+  }
 
   // Booking confirmation screen
   if (bookingComplete) {
@@ -345,28 +356,22 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed!</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed & Paid!</h2>
           <div className="space-y-2 text-gray-600">
             <p><strong>Booking Reference:</strong> {bookingDetails?.bookingReference}</p>
             <p><strong>Guest:</strong> {bookingDetails?.guestName}</p>
             <p><strong>Check-in:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</p>
             <p><strong>Check-out:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</p>
+            {bookingDetails?.paymentReference && (
+              <p><strong>Payment Reference:</strong> {bookingDetails.paymentReference}</p>
+            )}
+            {bookingDetails?.paymentAmount && (
+              <p><strong>Amount Paid:</strong> {formatCurrency(bookingDetails.paymentAmount)}</p>
+            )}
           </div>
           <button
-            onClick={() => {
-              setBookingComplete(false);
-              setSelectedUnit(null);
-              setAvailability([]);
-              setHasSearched(false);
-              setSearchParams({
-                startDate: '',
-                endDate: '',
-                guests: 1,
-                communities: []
-              });
-              setGuestDetails({ firstName: '', lastName: '', email: '', phone: '' });
-            }}
-            className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={resetToSearch}
+            className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
           >
             Make Another Booking
           </button>
@@ -375,336 +380,304 @@ const App: React.FC = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-          <h1 className="text-3xl md:text-4xl font-light text-gray-900 mb-2 text-center">Short Stay Booking</h1>
-          <p className="text-gray-600 text-center mb-6 md:mb-8">Find your perfect studio in Stockholm</p>
+  // Guest details form (now leads to payment)
+  if (showBookingForm && selectedUnit) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Guest Details</h2>
           
-          {/* Search Form */}
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-6 md:p-8 mb-6 md:mb-8">
-            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-4 md:gap-6">
-              <div className="w-full sm:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <input
-                    type="date"
-                    value={searchParams.startDate}
-                    onChange={(e) => handleStartDateChange(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-                  />
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <input
-                    type="date"
-                    value={searchParams.endDate}
-                    onChange={(e) => {
-                      setSearchParams({...searchParams, endDate: e.target.value});
-                      if (hasSearched) {
-                        setAvailability([]);
-                        setHasSearched(false);
-                      }
-                    }}
-                    min={getMinEndDate()}
-                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white text-base"
-                  />
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Guests</label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  <select
-                    value={searchParams.guests}
-                    onChange={(e) => {
-                      setSearchParams({...searchParams, guests: parseInt(e.target.value)});
-                      if (hasSearched) {
-                        setAvailability([]);
-                        setHasSearched(false);
-                      }
-                    }}
-                    className="w-full h-12 pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white appearance-none text-base"
-                  >
-                    {[1,2].map(num => (
-                      <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
-                    ))}
-                  </select>
-                  {/* Custom dropdown arrow */}
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="w-full sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
-                <button
-                  onClick={searchAvailability}
-                  disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-75 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium relative overflow-hidden"
-                >
-                  {/* Loading overlay with shimmer effect */}
-                  {loading && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
-                  )}
-                  
-                  {/* Search icon with spin animation when loading */}
-                  <Search className={`h-5 w-5 transition-transform duration-300 ${loading ? 'animate-spin' : ''}`} />
-                  
-                  {/* Text with loading dots animation */}
-                  {loading ? (
-                    'Searching'
-                  ) : (
-                    'Search'
-                  )}
-                </button>
-              </div>
-            </div>
-            
-            {/* Community Filter Buttons with better mobile spacing */}
-            <div className="border-t border-gray-100 pt-6 md:pt-6">
-              <h3 className="text-base font-medium text-gray-800 mb-4">Filter by Community</h3>
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-                {communities.map((community) => (
-                  <button
-                    key={community.id}
-                    onClick={() => toggleCommunity(community.id)}
-                    className={`px-6 py-3 rounded-xl font-normal transition-all duration-200 ${
-                      searchParams.communities.includes(community.id)
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
-                        : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 hover:text-gray-700'
-                    }`}
-                  >
-                    {community.name}
-                  </button>
-                ))}
-                {searchParams.communities.length > 0 && (
-                  <button
-                    onClick={() => {
-                      setSearchParams(prev => ({ ...prev, communities: [] }));
-                      if (hasSearched) {
-                        setAvailability([]);
-                        setHasSearched(false);
-                      }
-                    }}
-                    className="px-4 py-2 text-sm font-normal text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div>
-            </div>
+          {/* Booking Summary */}
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
+            <p className="text-sm text-gray-600">{selectedUnit.buildingName}</p>
+            <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName}</p>
+            <p className="text-sm text-gray-600">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</p>
+            <p className="text-sm font-semibold text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</p>
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
-              <p className="text-red-700">{error}</p>
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
             </div>
           )}
 
-          {/* Search Results */}
-          {availability.length > 0 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-light text-gray-900">Available Studios ({availability.length})</h2>
-              {availability.map((unit) => (
-                <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                  <div className="flex flex-col lg:flex-row min-h-[300px] lg:min-h-[250px]">
-                    {/* Property Image - Top on mobile, Left on desktop */}
-                    <div className="relative w-full lg:w-80 h-64 lg:h-auto lg:min-h-full flex-shrink-0">
-                      <img
-                        src={getPropertyImage(unit.inventoryTypeId)}
-                        alt={unit.inventoryTypeName}
-                        className="w-full h-full object-cover lg:rounded-l-2xl rounded-t-2xl lg:rounded-t-none"
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/320x256/e5e7eb/9ca3af?text=Photo+Coming+Soon';
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Content - Bottom on mobile, Right on desktop */}
-                    <div className="flex-1 p-6 lg:p-8 flex flex-col">
-                      <div className="flex flex-row justify-between">
-                        {/* Left side - Studio info */}
-                        <div className="flex-1">
-                          <h3 className="text-xl lg:text-2xl font-light text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
-                          <div className="flex items-center gap-2 text-gray-600 mb-4">
-                            <MapPin className="h-4 w-4" />
-                            <span className="text-sm">{unit.buildingName}</span>
-                          </div>
-                        </div>
-                        
-                        {/* Right side - Pricing (same row on both mobile and desktop) */}
-                        {unit.rates.length > 0 && unit.rates[0] && (
-                          <div className="text-right">
-                            <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-0.5">
-                              {formatCurrency(unit.rates[0].avgNightlyRate * calculateNights())}
-                            </p>
-                            <p className="text-xs lg:text-sm text-gray-500 mb-0.5">
-                              {formatCurrency(unit.rates[0].avgNightlyRate)}/night
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              VAT included
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Rates Section - Gray box with dates and button */}
-                      {unit.rates.length > 0 && (
-                        <div className="space-y-4 mt-2">
-                          {unit.rates.map((rate) => (
-                            <div key={rate.rateId} className="border border-gray-100 rounded-xl p-4 lg:p-6 bg-gradient-to-r from-gray-50 to-white">
-                              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-                                <div className="flex-1">
-                                  <div className="flex flex-col gap-4">
-                                    <div>
-                                      <span className="inline-block font-medium bg-gray-100 px-3 py-1 rounded-full text-sm">{calculateNights()} nights</span>
-                                    </div>
-                                    <div className="text-sm text-gray-600">
-                                      <span className="font-medium">From:</span> {formatDateWithDay(searchParams.startDate)}
-                                      <br />
-                                      <span className="font-medium">To:</span> {formatDateWithDay(searchParams.endDate)}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center">
-                                  <button
-                                    onClick={() => selectUnit(unit, rate)}
-                                    className="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                  >
-                                    Book Now
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Booking Form Modal */}
-          {showBookingForm && selectedUnit && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-              <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
-                <div className="p-8">
-                  <h3 className="text-2xl font-light text-gray-900 mb-6">Complete Your Booking</h3>
-                  
-                  {/* Booking Summary */}
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl mb-6 border border-gray-100">
-                    <h4 className="font-medium text-gray-700 mb-4">Booking Summary</h4>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <p><strong>Studio:</strong> {selectedUnit.inventoryTypeName}</p>
-                      <p><strong>Community:</strong> {selectedUnit.buildingName}</p>
-                      <p><strong>Rate:</strong> {selectedUnit.selectedRate.rateName}</p>
-                      <p><strong>Check-in:</strong> {formatDisplayDate(searchParams.startDate)}</p>
-                      <p><strong>Check-out:</strong> {formatDisplayDate(searchParams.endDate)}</p>
-                      <p><strong>Guests:</strong> {searchParams.guests}</p>
-                      <p className="text-lg font-medium text-gray-900 pt-2 border-t border-gray-200">
-                        <strong>Total: {formatCurrency(selectedUnit.selectedRate.avgNightlyRate * calculateNights())}</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Guest Details Form */}
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
-                          <input
-                            type="text"
-                            value={guestDetails.firstName}
-                            onChange={(e) => setGuestDetails({...guestDetails, firstName: e.target.value})}
-                            placeholder="Enter your first name"
-                            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
-                        <div className="relative">
-                          <User className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
-                          <input
-                            type="text"
-                            value={guestDetails.lastName}
-                            onChange={(e) => setGuestDetails({...guestDetails, lastName: e.target.value})}
-                            placeholder="Enter your last name"
-                            className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
-                        <input
-                          type="email"
-                          value={guestDetails.email}
-                          onChange={(e) => setGuestDetails({...guestDetails, email: e.target.value})}
-                          placeholder="Enter your email address"
-                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-4 h-4 w-4 text-gray-400" />
-                        <input
-                          type="tel"
-                          value={guestDetails.phone || ''}
-                          onChange={(e) => setGuestDetails({...guestDetails, phone: e.target.value})}
-                          placeholder="Enter your phone number (optional)"
-                          className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 pt-6">
-                      <button
-                        type="button"
-                        onClick={() => setShowBookingForm(false)}
-                        className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-200 font-medium"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleBookingSubmit}
-                        disabled={loading}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      >
-                        <CreditCard className="h-4 w-4" />
-                        {loading ? 'Booking...' : 'Confirm Booking'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+          <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                First Name *
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  id="firstName"
+                  required
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={guestDetails.firstName}
+                  onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                  placeholder="John"
+                />
               </div>
             </div>
-          )}
+
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name *
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  id="lastName"
+                  required
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={guestDetails.lastName}
+                  onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address *
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="email"
+                  id="email"
+                  required
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={guestDetails.email}
+                  onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="john@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="tel"
+                  id="phone"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={guestDetails.phone}
+                  onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="+46 70 123 4567"
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowBookingForm(false)}
+                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Continue to Payment
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
+    );
+  }
+
+  // Main search interface
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-gray-900">Short Stay Booking</h1>
+          <p className="text-gray-600 mt-2">Find and book your perfect short-term accommodation</p>
+        </div>
+      </div>
+
+      {/* Search Form */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {/* Check-in Date */}
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-in Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="date"
+                  id="startDate"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchParams.startDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            {/* Check-out Date */}
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-out Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="date"
+                  id="endDate"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchParams.endDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
+                  min={getMinEndDate()}
+                />
+              </div>
+            </div>
+
+            {/* Guests */}
+            <div>
+              <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-1">
+                Guests
+              </label>
+              <div className="relative">
+                <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <select
+                  id="guests"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchParams.guests}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+                >
+                  {[1, 2, 3, 4, 5, 6].map(num => (
+                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Search Button */}
+            <div className="flex items-end">
+              <button
+                onClick={searchAvailability}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Community Filters */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Community (Optional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {communities.map(community => (
+                <button
+                  key={community.id}
+                  onClick={() => toggleCommunity(community.id)}
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    searchParams.communities.includes(community.id)
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <MapPin className="w-3 h-3 inline mr-1" />
+                  {community.name} ({community.area})
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Search Results */}
+        {hasSearched && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Available Properties ({availability.length})
+            </h2>
+
+            {availability.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <div className="text-gray-400 mb-4">
+                  <Search className="w-16 h-16 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+                <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availability.map((unit, index) => (
+                  <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <img 
+                      src={getPropertyImage(unit.inventoryTypeId)} 
+                      alt={unit.inventoryTypeName}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
+                      <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
+                      
+                      <div className="space-y-3">
+                        {unit.rates.map((rate, rateIndex) => (
+                          <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium text-gray-900">{rate.rateName}</h4>
+                                {rate.description && (
+                                  <p className="text-sm text-gray-600">{rate.description}</p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
+                                <p className="text-sm text-gray-500">
+                                  {formatCurrency(rate.avgNightlyRate)}/night
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => selectUnit(unit, rate)}
+                              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                            >
+                              Select & Book
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
