@@ -20,7 +20,8 @@ const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 const App: React.FC = () => {
   const {
     currentStep,
-    searchParams,
+    searchFormParams,
+    confirmedSearchParams,
     availability,
     hasSearched,
     selectedUnit,
@@ -28,7 +29,8 @@ const App: React.FC = () => {
     bookingDetails,
     error,
     loading,
-    setSearchParams,
+    setSearchFormParams,
+    setConfirmedSearchParams,
     setAvailability,
     setHasSearched,
     setSelectedUnit,
@@ -46,13 +48,13 @@ const App: React.FC = () => {
     toggleCommunity,
     searchAvailability
   } = useSearchLogic(
-    searchParams,
-    setSearchParams,
+    searchFormParams,
+    setSearchFormParams,
+    setConfirmedSearchParams,
     setAvailability,
     setHasSearched,
     setError,
-    setLoading,
-    hasSearched
+    setLoading
   );
 
   // Select unit and rate
@@ -85,9 +87,9 @@ const App: React.FC = () => {
       const bookingData = {
         guestDetails,
         stayDetails: {
-          startDate: searchParams.startDate,
-          endDate: searchParams.endDate,
-          guests: searchParams.guests
+          startDate: confirmedSearchParams.startDate,
+          endDate: confirmedSearchParams.endDate,
+          guests: confirmedSearchParams.guests
         },
         unitDetails: {
           rateId: selectedUnit.selectedRate.rateId,
@@ -137,7 +139,7 @@ const App: React.FC = () => {
       return (
         <GuestDetailsForm
           selectedUnit={selectedUnit}
-          searchParams={searchParams}
+          confirmedSearchParams={confirmedSearchParams}
           guestDetails={guestDetails}
           setGuestDetails={setGuestDetails}
           onSubmit={handleGuestDetailsSubmit}
@@ -161,8 +163,8 @@ const App: React.FC = () => {
           loading={loading}
           bookingDetails={{
             guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-            checkIn: searchParams.startDate,
-            checkOut: searchParams.endDate,
+            checkIn: confirmedSearchParams.startDate,
+            checkOut: confirmedSearchParams.endDate,
             propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
             nights: calculateNights()
           }}
@@ -195,8 +197,8 @@ const App: React.FC = () => {
           {/* Main Content */}
           <div className="max-w-7xl mx-auto px-4 py-8">
             <SearchForm
-              searchParams={searchParams}
-              setSearchParams={setSearchParams}
+              searchFormParams={searchFormParams}
+              setSearchFormParams={setSearchFormParams}
               onSearch={searchAvailability}
               loading={loading}
               getMinEndDate={getMinEndDate}
@@ -213,7 +215,7 @@ const App: React.FC = () => {
             <SearchResults
               availability={availability}
               hasSearched={hasSearched}
-              searchParams={searchParams}
+              confirmedSearchParams={confirmedSearchParams}
               onSelectUnit={selectUnit}
               calculateNights={calculateNights}
             />

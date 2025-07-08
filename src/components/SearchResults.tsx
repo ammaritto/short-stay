@@ -5,7 +5,7 @@ import { Unit, Rate, SearchParams } from '../hooks/useBookingState';
 interface SearchResultsProps {
   availability: Unit[];
   hasSearched: boolean;
-  searchParams: SearchParams;
+  confirmedSearchParams: SearchParams;
   onSelectUnit: (unit: Unit, rate: Rate) => void;
   calculateNights: () => number;
 }
@@ -13,7 +13,7 @@ interface SearchResultsProps {
 const SearchResults: React.FC<SearchResultsProps> = ({
   availability,
   hasSearched,
-  searchParams,
+  confirmedSearchParams,
   onSelectUnit,
   calculateNights
 }) => {
@@ -88,8 +88,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <div className="text-sm text-gray-600">
-                            <div><span className="font-medium">From:</span> {formatDateWithWeekday(searchParams.startDate)}</div>
-                            <div><span className="font-medium">To:</span> {formatDateWithWeekday(searchParams.endDate)}</div>
+                            <div><span className="font-medium">From:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}</div>
+                            <div><span className="font-medium">To:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}</div>
                           </div>
                           <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
                         </div>

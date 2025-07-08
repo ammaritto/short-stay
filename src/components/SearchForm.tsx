@@ -3,8 +3,8 @@ import { Search, Calendar, Users, MapPin } from 'lucide-react';
 import { SearchParams } from '../hooks/useBookingState';
 
 interface SearchFormProps {
-  searchParams: SearchParams;
-  setSearchParams: (params: SearchParams | ((prev: SearchParams) => SearchParams)) => void;
+  searchFormParams: SearchParams;
+  setSearchFormParams: (params: SearchParams | ((prev: SearchParams) => SearchParams)) => void;
   onSearch: () => void;
   loading: boolean;
   getMinEndDate: () => string;
@@ -17,8 +17,8 @@ const communities = [
 ];
 
 const SearchForm: React.FC<SearchFormProps> = ({
-  searchParams,
-  setSearchParams,
+  searchFormParams,
+  setSearchFormParams,
   onSearch,
   loading,
   getMinEndDate,
@@ -38,8 +38,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
               type="date"
               id="startDate"
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchParams.startDate}
-              onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
+              value={searchFormParams.startDate}
+              onChange={(e) => setSearchFormParams(prev => ({ ...prev, startDate: e.target.value }))}
               min={new Date().toISOString().split('T')[0]}
             />
           </div>
@@ -56,8 +56,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
               type="date"
               id="endDate"
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchParams.endDate}
-              onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
+              value={searchFormParams.endDate}
+              onChange={(e) => setSearchFormParams(prev => ({ ...prev, endDate: e.target.value }))}
               min={getMinEndDate()}
             />
           </div>
@@ -73,8 +73,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
             <select
               id="guests"
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchParams.guests}
-              onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+              value={searchFormParams.guests}
+              onChange={(e) => setSearchFormParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
             >
               {[1, 2, 3, 4, 5, 6].map(num => (
                 <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
@@ -113,7 +113,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               key={community.id}
               onClick={() => toggleCommunity(community.id)}
               className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                searchParams.communities.includes(community.id)
+                searchFormParams.communities.includes(community.id)
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}

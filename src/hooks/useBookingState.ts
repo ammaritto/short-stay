@@ -52,12 +52,23 @@ export type BookingStep = 'search' | 'guest-details' | 'payment' | 'confirmation
 
 export const useBookingState = () => {
   const [currentStep, setCurrentStep] = useState<BookingStep>('search');
-  const [searchParams, setSearchParams] = useState<SearchParams>({
+  
+  // Separate search form state from confirmed booking state
+  const [searchFormParams, setSearchFormParams] = useState<SearchParams>({
     startDate: '',
     endDate: '',
     guests: 1,
     communities: []
   });
+  
+  // Confirmed search parameters (only updated when search is performed)
+  const [confirmedSearchParams, setConfirmedSearchParams] = useState<SearchParams>({
+    startDate: '',
+    endDate: '',
+    guests: 1,
+    communities: []
+  });
+  
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
@@ -92,7 +103,8 @@ export const useBookingState = () => {
   return {
     // State
     currentStep,
-    searchParams,
+    searchFormParams,
+    confirmedSearchParams,
     availability,
     hasSearched,
     selectedUnit,
@@ -102,7 +114,8 @@ export const useBookingState = () => {
     loading,
     
     // Actions
-    setSearchParams,
+    setSearchFormParams,
+    setConfirmedSearchParams,
     setAvailability,
     setHasSearched,
     setSelectedUnit,

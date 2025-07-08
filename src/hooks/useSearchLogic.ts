@@ -4,13 +4,13 @@ import { SearchParams, Unit } from './useBookingState';
 const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 
 export const useSearchLogic = (
-  searchParams: SearchParams,
-  setSearchParams: (params: SearchParams | ((prev: SearchParams) => SearchParams)) => void,
+  searchFormParams: SearchParams,
+  setSearchFormParams: (params: SearchParams | ((prev: SearchParams) => SearchParams)) => void,
+  setConfirmedSearchParams: (params: SearchParams) => void,
   setAvailability: (units: Unit[]) => void,
   setHasSearched: (searched: boolean) => void,
   setError: (error: string) => void,
   setLoading: (loading: boolean) => void,
-  hasSearched: boolean
 ) => {
   // Set default dates on mount
   useEffect(() => {
@@ -20,76 +20,78 @@ export const useSearchLogic = (
     const dayAfter = new Date(today);
     dayAfter.setDate(dayAfter.getDate() + 3);
     
-    setSearchParams({
+    setSearchFormParams({
       startDate: tomorrow.toISOString().split('T')[0],
       endDate: dayAfter.toISOString().split('T')[0],
       guests: 1,
       communities: []
     });
-  }, [setSearchParams]);
+  }, [setSearchFormParams]);
 
-  // Auto-update checkout date when checkin changes (only if not searched yet)
+  // Auto-update checkout date when checkin changes (only affects search form)
   useEffect(() => {
-    if (searchParams.startDate && !hasSearched) {
-      const checkIn = new Date(searchParams.startDate);
-      const checkOut = new Date(searchParams.endDate);
+    if (searchFormParams.startDate) {
+      const checkIn = new Date(searchFormParams.startDate);
+      const checkOut = new Date(searchFormParams.endDate);
       
-      if (!searchParams.endDate || checkOut <= checkIn) {
+      if (!searchFormParams.endDate || checkOut <= checkIn) {
         const newCheckOut = new Date(checkIn);
         newCheckOut.setDate(newCheckOut.getDate() + 1);
-        setSearchParams(prev => ({
+        setSearchFormParams(prev => ({
           ...prev,
           endDate: newCheckOut.toISOString().split('T')[0]
         }));
       }
     }
-  }, [searchParams.startDate, searchParams.endDate, hasSearched, setSearchParams]);
+  }, [searchFormParams.startDate, searchFormParams.endDate, setSearchFormParams]);
 
   const calculateNights = (): number => {
-    if (!searchParams.startDate || !searchParams.endDate) return 0;
-    const start = new Date(searchParams.startDate);
-    const end = new Date(searchParams.endDate);
+    if (!searchFormParams.startDate || !searchFormParams.endDate) return 0;
+    const start = new Date(searchFormParams.startDate);
+    const end = new Date(searchFormParams.endDate);
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   const getMinEndDate = (): string => {
-    if (!searchParams.startDate) return '';
-    const minDate = new Date(searchParams.startDate);
+    if (!searchFormParams.startDate) return '';
+    const minDate = new Date(searchFormParams.startDate);
     minDate.setDate(minDate.getDate() + 1);
     return minDate.toISOString().split('T')[0];
   };
 
   const toggleCommunity = (communityId: number): void => {
-    setSearchParams(prev => ({
+    setSearchFormParams(prev => ({
       ...prev,
       communities: prev.communities.includes(communityId)
         ? prev.communities.filter(id => id !== communityId)
         : [...prev.communities, communityId]
     }));
-    if (hasSearched) {
-      setAvailability([]);
-      setHasSearched(false);
-    }
+    // Reset search results when filters change
+    setAvailability([]);
+    setHasSearched(false);
   };
 
   const searchAvailability = async (): Promise<void> => {
-    if (!searchParams.startDate || !searchParams.endDate) {
+    if (!searchFormParams.startDate || !searchFormParams.endDate) {
       setError('Please select check-in and check-out dates');
       return;
     }
+
+    // Save the current search form params as confirmed params
+    setConfirmedSearchParams(searchFormParams);
 
     setLoading(true);
     setError('');
     
     try {
       const params = new URLSearchParams({
-        startDate: searchParams.startDate,
-        endDate: searchParams.endDate,
-        guests: searchParams.guests.toString()
+        startDate: searchFormParams.startDate,
+        endDate: searchFormParams.endDate,
+        guests: searchFormParams.guests.toString()
       });
       
-      if (searchParams.communities.length > 0) {
-        params.append('communities', searchParams.communities.join(','));
+      if (searchFormParams.communities.length > 0) {
+        params.append('communities', searchFormParams.communities.join(','));
       }
       
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
