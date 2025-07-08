@@ -461,8 +461,7 @@ const App: React.FC = () => {
               {/* Booking Summary */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
-                <p className="text-sm text-gray-600">{selectedUnit.buildingName}</p>
-                <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName}</p>
+                <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">From:</span> {formatDateWithWeekday(searchParams.startDate)}
                 </p>
@@ -471,8 +470,9 @@ const App: React.FC = () => {
                 </p>
                 <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
                 <p className="text-sm font-semibold text-gray-800 mt-2">
-                  <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)} (VAT incl.)
+                  <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
                 </p>
+                <p className="text-xs text-gray-500">(VAT incl.)</p>
               </div>
 
               {error && (
@@ -740,8 +740,9 @@ const App: React.FC = () => {
                               <div className="text-right">
                                 <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
                                 <p className="text-sm text-gray-500">
-                                  {formatCurrency(rate.avgNightlyRate)}/night (VAT incl.)
+                                  {formatCurrency(rate.avgNightlyRate)}/night
                                 </p>
+                                <p className="text-xs text-gray-500">(VAT incl.)</p>
                               </div>
                             </div>
                             <button
