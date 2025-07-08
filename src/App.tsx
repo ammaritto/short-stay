@@ -214,7 +214,7 @@ const App: React.FC = () => {
 
     setLoading(true);
     setError('');
-    setHasSearched(true);
+    // Don't set hasSearched to true until we get results
     
     try {
       const params = new URLSearchParams({
@@ -257,14 +257,17 @@ const App: React.FC = () => {
         });
         
         setAvailability(transformedData);
+        setHasSearched(true); // Only set this after successful search
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
+        setHasSearched(true); // Set this even for no results
       }
     } catch (err) {
       console.error('Search error:', err);
       setError('Failed to search availability');
       setAvailability([]);
+      setHasSearched(true); // Set this even for errors
     } finally {
       setLoading(false);
     }
