@@ -226,8 +226,18 @@ const App: React.FC = () => {
         params.append('communities', searchParams.communities.join(','));
       }
       
+      console.log('Searching with params:', params.toString());
+      
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (data.success && data.data) {
         const searchNights = calculateNights(); // Calculate nights based on current search params
@@ -260,14 +270,15 @@ const App: React.FC = () => {
         setLastSearchParams({ ...searchParams }); // Store the search params that generated these results
         setHasSearched(true);
       } else {
+        console.error('API returned error:', data);
         setError(data.message || 'No availability found');
         setAvailability([]);
         setLastSearchParams({ ...searchParams });
         setHasSearched(true);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Search error:', err);
-      setError('Failed to search availability');
+      setError(`Failed to search availability: ${err.message}`);
       setAvailability([]);
       setLastSearchParams({ ...searchParams });
       setHasSearched(true);
