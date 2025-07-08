@@ -693,9 +693,6 @@ const App: React.FC = () => {
                                   <div><span className="font-medium">To:</span> {formatDateWithWeekday(searchParams.endDate)}</div>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
-                                {rate.description && (
-                                  <p className="text-sm text-gray-600 mt-1">{rate.description}</p>
-                                )}
                               </div>
                               <div className="text-right">
                                 <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
