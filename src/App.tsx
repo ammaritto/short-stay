@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
+import PaymentForm from './components/PaymentForm';
+
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
