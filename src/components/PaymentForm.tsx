@@ -203,7 +203,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total Amount:</span>
-                  <span className="text-blue-600">{formatCurrency(totalAmount)}</span>
+                  <span className="text-blue-600">{formatCurrency(totalAmount)} (VAT incl.)</span>
                 </div>
               </div>
             </div>
@@ -343,7 +343,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                     Processing Payment...
                   </div>
                 ) : (
-                  `Pay ${formatCurrency(totalAmount)}`
+                  `Pay ${formatCurrency(totalAmount)} (VAT incl.)`
                 )}
               </button>
             </form>
