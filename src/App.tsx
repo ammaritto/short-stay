@@ -1,6 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, X } from 'lucide-react';
-
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
@@ -58,277 +55,6 @@ interface BookingDetails {
   paymentAmount?: number;
 }
 
-// Payment Form Component
-const PaymentForm: React.FC<{
-  totalAmount: number;
-  currency: string;
-  onPaymentSubmit: (paymentDetails: PaymentDetails) => Promise<void>;
-  onBack: () => void;
-  loading: boolean;
-  bookingDetails: {
-    guestName: string;
-    checkIn: string;
-    checkOut: string;
-    propertyName: string;
-    nights: number;
-  };
-}> = ({ totalAmount, currency, onPaymentSubmit, onBack, loading, bookingDetails }) => {
-  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>({
-    cardNumber: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: '',
-    cardholderName: ''
-  });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  const formatCurrency = (amount: number): string => {
-    try {
-      const num = parseFloat(amount?.toString() || '0') || 0;
-      return `${num.toLocaleString('sv-SE')} SEK`;
-    } catch (e) {
-      return '0 SEK';
-    }
-  };
-
-  const formatDateWithWeekday = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short'
-      };
-      return date.toLocaleDateString('en-GB', options);
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const formatCardNumber = (value: string): string => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
-  };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value);
-    setPaymentDetails(prev => ({ ...prev, cardNumber: formatted }));
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!paymentDetails.cardNumber || paymentDetails.cardNumber.replace(/\s/g, '').length < 13) {
-      newErrors.cardNumber = 'Please enter a valid card number';
-    }
-
-    if (!paymentDetails.expiryMonth) {
-      newErrors.expiryMonth = 'Required';
-    }
-
-    if (!paymentDetails.expiryYear) {
-      newErrors.expiryYear = 'Required';
-    }
-
-    if (!paymentDetails.cvv || paymentDetails.cvv.length < 3) {
-      newErrors.cvv = 'Invalid CVV';
-    }
-
-    if (!paymentDetails.cardholderName.trim()) {
-      newErrors.cardholderName = 'Required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (validateForm()) {
-      await onPaymentSubmit(paymentDetails);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="flex items-center p-4">
-          <button onClick={onBack} className="mr-3 p-2 -ml-2">
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-900">Payment</h1>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4">
-        {/* Booking Summary Card */}
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <h3 className="font-medium text-gray-900 mb-3">Booking Summary</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Property</span>
-              <span className="text-gray-900 text-right flex-1 ml-2">{bookingDetails.propertyName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Guest</span>
-              <span className="text-gray-900">{bookingDetails.guestName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-in</span>
-              <span className="text-gray-900">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-out</span>
-              <span className="text-gray-900">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Nights</span>
-              <span className="text-gray-900">{bookingDetails.nights}</span>
-            </div>
-            <div className="border-t pt-2 mt-2">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-gray-900">Total Amount</span>
-                <span className="font-bold text-lg text-blue-600">{formatCurrency(totalAmount)}</span>
-              </div>
-              <p className="text-xs text-gray-500 text-right">(VAT incl.)</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Form */}
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <h3 className="font-medium text-gray-900 mb-4">Payment Details</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Card Number *
-              </label>
-              <input
-                type="text"
-                className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.cardNumber ? 'border-red-300' : 'border-gray-300'
-                }`}
-                value={paymentDetails.cardNumber}
-                onChange={handleCardNumberChange}
-                placeholder="1234 5678 9012 3456"
-                maxLength={19}
-              />
-              {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Month *
-                </label>
-                <select
-                  className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.expiryMonth ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  value={paymentDetails.expiryMonth}
-                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryMonth: e.target.value }))}
-                >
-                  <option value="">MM</option>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
-                      {String(i + 1).padStart(2, '0')}
-                    </option>
-                  ))}
-                </select>
-                {errors.expiryMonth && <p className="text-red-500 text-xs mt-1">{errors.expiryMonth}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Year *
-                </label>
-                <select
-                  className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.expiryYear ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  value={paymentDetails.expiryYear}
-                  onChange={(e) => setPaymentDetails(prev => ({ ...prev, expiryYear: e.target.value }))}
-                >
-                  <option value="">YY</option>
-                  {Array.from({ length: 10 }, (_, i) => {
-                    const year = new Date().getFullYear() + i;
-                    return (
-                      <option key={year} value={String(year).slice(-2)}>
-                        {String(year).slice(-2)}
-                      </option>
-                    );
-                  })}
-                </select>
-                {errors.expiryYear && <p className="text-red-500 text-xs mt-1">{errors.expiryYear}</p>}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                CVV *
-              </label>
-              <input
-                type="text"
-                className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.cvv ? 'border-red-300' : 'border-gray-300'
-                }`}
-                value={paymentDetails.cvv}
-                onChange={(e) => setPaymentDetails(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                placeholder="123"
-                maxLength={4}
-              />
-              {errors.cvv && <p className="text-red-500 text-xs mt-1">{errors.cvv}</p>}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cardholder Name *
-              </label>
-              <input
-                type="text"
-                className={`w-full px-3 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.cardholderName ? 'border-red-300' : 'border-gray-300'
-                }`}
-                value={paymentDetails.cardholderName}
-                onChange={(e) => setPaymentDetails(prev => ({ ...prev, cardholderName: e.target.value }))}
-                placeholder="John Doe"
-              />
-              {errors.cardholderName && <p className="text-red-500 text-xs mt-1">{errors.cardholderName}</p>}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center mt-6"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Pay {formatCurrency(totalAmount)}
-                </>
-              )}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const App: React.FC = () => {
   // Main state
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
@@ -374,7 +100,6 @@ const App: React.FC = () => {
   };
 
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
-
   // Set default dates
   useEffect(() => {
     const today = new Date();
@@ -417,14 +142,15 @@ const App: React.FC = () => {
     return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  // Format date with weekday (shorter for mobile)
+  // Format date with weekday (e.g., "Monday, 07 Jul 2025")
   const formatDateWithWeekday = (dateString: string): string => {
     try {
       const date = new Date(dateString);
       const options: Intl.DateTimeFormatOptions = {
-        weekday: 'short',
+        weekday: 'long',
         day: '2-digit',
-        month: 'short'
+        month: 'short',
+        year: 'numeric'
       };
       return date.toLocaleDateString('en-GB', options);
     } catch (e) {
@@ -432,7 +158,7 @@ const App: React.FC = () => {
     }
   };
 
-  // Format date for display (dd/mm/yyyy)
+  // Format date for display (dd/mm/yyyy) - keep this for other uses
   const formatDisplayDate = (dateString: string): string => {
     try {
       const date = new Date(dateString);
@@ -459,6 +185,7 @@ const App: React.FC = () => {
       const checkIn = new Date(searchParams.startDate);
       const checkOut = new Date(searchParams.endDate);
       
+      // If checkout is not set or is not after checkin, set it to 1 day after checkin
       if (!searchParams.endDate || checkOut <= checkIn) {
         const newCheckOut = new Date(checkIn);
         newCheckOut.setDate(newCheckOut.getDate() + 1);
@@ -479,7 +206,6 @@ const App: React.FC = () => {
         : [...prev.communities, communityId]
     }));
   };
-
   // Search for availability
   const searchAvailability = async (): Promise<void> => {
     if (!searchParams.startDate || !searchParams.endDate) {
@@ -542,7 +268,7 @@ const App: React.FC = () => {
         });
         
         setAvailability(transformedData);
-        setLastSearchParams({ ...searchParams });
+        setLastSearchParams({ ...searchParams }); // FIXED: Store the search params that generated these results
         setHasSearched(true);
       } else {
         console.error('API returned error:', data);
@@ -568,7 +294,7 @@ const App: React.FC = () => {
     setShowBookingForm(true);
   };
 
-  // Handle guest details submission
+  // Handle guest details submission (now goes to payment)
   const handleGuestDetailsSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     
@@ -593,9 +319,9 @@ const App: React.FC = () => {
       const bookingData = {
         guestDetails,
         stayDetails: {
-          startDate: lastSearchParams.startDate,
-          endDate: lastSearchParams.endDate,
-          guests: lastSearchParams.guests
+          startDate: lastSearchParams.startDate, // FIXED: Use lastSearchParams
+          endDate: lastSearchParams.endDate,     // FIXED: Use lastSearchParams
+          guests: lastSearchParams.guests        // FIXED: Use lastSearchParams
         },
         unitDetails: {
           rateId: selectedUnit.selectedRate.rateId,
@@ -659,7 +385,6 @@ const App: React.FC = () => {
     });
     setError('');
   };
-
   // Show payment form
   if (showPaymentForm && selectedUnit && lastSearchParams) {
     return (
@@ -671,8 +396,8 @@ const App: React.FC = () => {
         loading={loading}
         bookingDetails={{
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          checkIn: lastSearchParams.startDate,
-          checkOut: lastSearchParams.endDate,
+          checkIn: lastSearchParams.startDate,      // FIXED: Use lastSearchParams
+          checkOut: lastSearchParams.endDate,       // FIXED: Use lastSearchParams
           propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
           nights: selectedUnit.selectedRate.nights
         }}
@@ -683,222 +408,238 @@ const App: React.FC = () => {
   // Booking confirmation screen
   if (bookingComplete) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="p-4">
-          <div className="bg-white rounded-lg p-6 text-center shadow-sm">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Booking Confirmed!</h2>
-            <div className="space-y-2 text-sm text-gray-600 mb-6">
-              <p><strong>Reference:</strong> {bookingDetails?.bookingReference}</p>
-              <p><strong>Guest:</strong> {bookingDetails?.guestName}</p>
-              <p><strong>Check-in:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</p>
-              <p><strong>Check-out:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</p>
-              {bookingDetails?.paymentReference && (
-                <p><strong>Payment Ref:</strong> {bookingDetails.paymentReference}</p>
-              )}
-              {bookingDetails?.paymentAmount && (
-                <p><strong>Amount Paid:</strong> {formatCurrency(bookingDetails.paymentAmount)}</p>
-              )}
-            </div>
-            <button
-              onClick={resetToSearch}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Make Another Booking
-            </button>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Booking Confirmed & Paid!</h2>
+          <div className="space-y-2 text-gray-600">
+            <p><strong>Booking Reference:</strong> {bookingDetails?.bookingReference}</p>
+            <p><strong>Guest:</strong> {bookingDetails?.guestName}</p>
+            <p><strong>Check-in:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</p>
+            <p><strong>Check-out:</strong> {bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</p>
+            {bookingDetails?.paymentReference && (
+              <p><strong>Payment Reference:</strong> {bookingDetails.paymentReference}</p>
+            )}
+            {bookingDetails?.paymentAmount && (
+              <p><strong>Amount Paid:</strong> {formatCurrency(bookingDetails.paymentAmount)}</p>
+            )}
           </div>
+          <button
+            onClick={resetToSearch}
+            className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Make Another Booking
+          </button>
         </div>
       </div>
     );
   }
-
-  // Guest details form (mobile fullscreen)
+  // Guest details form (now as popup overlay)
   if (showBookingForm && selectedUnit && lastSearchParams) {
     return (
       <div className="min-h-screen bg-gray-50">
-        {/* Mobile Header */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="flex items-center p-4">
-            <button onClick={() => setShowBookingForm(false)} className="mr-3 p-2 -ml-2">
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <h1 className="text-lg font-semibold text-gray-900">Guest Details</h1>
+        {/* Background content (blurred) */}
+        <div className="filter blur-sm opacity-50">
+          {/* Header */}
+          <div className="bg-white shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <h1 className="text-3xl font-bold text-gray-900">Short Stay Booking</h1>
+              <p className="text-gray-600 mt-2">Find and book your perfect short-term accommodation</p>
+            </div>
+          </div>
+
+          {/* Search Results Background */}
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {availability.map((unit, index) => (
+                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <img 
+                    src={getPropertyImage(unit.inventoryTypeId)} 
+                    alt={unit.inventoryTypeName}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
+                    <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          {/* Booking Summary */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h3 className="font-medium text-gray-900 mb-3">Booking Summary</h3>
-            <div className="space-y-2 text-sm">
-              <p className="text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
-              <div className="flex justify-between">
-                <span className="text-gray-600">From:</span>
-                <span className="text-gray-900">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
+        {/* Popup Modal */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Guest Details</h2>
+              
+              {/* Booking Summary */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
+                <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams.startDate)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams.endDate)}
+                </p>
+                <p className="text-sm text-gray-600">({selectedUnit.selectedRate.nights} nights)</p>
+                <p className="text-sm font-semibold text-gray-800 mt-2">
+                  <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
+                </p>
+                <p className="text-xs text-gray-500">(VAT incl.)</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">To:</span>
-                <span className="text-gray-900">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Nights:</span>
-                <span className="text-gray-900">{selectedUnit.selectedRate.nights}</span>
-              </div>
-              <div className="border-t pt-2 mt-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-900">Total Amount</span>
-                  <span className="font-bold text-lg text-blue-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</span>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                  {error}
                 </div>
-                <p className="text-xs text-gray-500 text-right">(VAT incl.)</p>
-              </div>
+              )}
+
+              <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      id="firstName"
+                      required
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={guestDetails.firstName}
+                      onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                      placeholder="John"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name *
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <input
+                      type="text"
+                      id="lastName"
+                      required
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={guestDetails.lastName}
+                      onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <input
+                      type="email"
+                      id="email"
+                      required
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={guestDetails.email}
+                      onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <input
+                      type="tel"
+                      id="phone"
+                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={guestDetails.phone}
+                      onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+46 70 123 4567"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowBookingForm(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Continue to Payment
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Guest Details Form */}
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <h3 className="font-medium text-gray-900 mb-4">Your Details</h3>
-            
-            <form onSubmit={handleGuestDetailsSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    id="firstName"
-                    required
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={guestDetails.firstName}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                    placeholder="John"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name *
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    id="lastName"
-                    required
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={guestDetails.lastName}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address *
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="email"
-                    id="email"
-                    required
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={guestDetails.email}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="tel"
-                    id="phone"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={guestDetails.phone}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+46 70 123 4567"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mt-6"
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Continue to Payment
-              </button>
-            </form>
           </div>
         </div>
       </div>
     );
   }
-
   // Main search interface
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
+      {/* Header */}
       <div className="bg-white shadow-sm">
-        <div className="p-4">
-          <h1 className="text-xl font-bold text-gray-900">Short Stay Booking</h1>
-          <p className="text-gray-600 text-sm mt-1">Find your perfect accommodation</p>
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-gray-900">Short Stay Booking</h1>
+          <p className="text-gray-600 mt-2">Find and book your perfect short-term accommodation</p>
         </div>
       </div>
 
       {/* Search Form */}
-      <div className="p-4">
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="space-y-4">
-            {/* Date Inputs - Stack on mobile */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  Check-in
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="date"
-                    id="startDate"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    value={searchParams.startDate}
-                    onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            {/* Check-in Date */}
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-in Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="date"
+                  id="startDate"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchParams.startDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
+                  min={new Date().toISOString().split('T')[0]}
+                />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-                  Check-out
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <input
-                    type="date"
-                    id="endDate"
-                    className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    value={searchParams.endDate}
-                    onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
-                    min={getMinEndDate()}
-                  />
-                </div>
+            {/* Check-out Date */}
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-out Date
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="date"
+                  id="endDate"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={searchParams.endDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
+                  min={getMinEndDate()}
+                />
               </div>
             </div>
 
@@ -911,7 +652,7 @@ const App: React.FC = () => {
                 <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <select
                   id="guests"
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={searchParams.guests}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                 >
@@ -922,87 +663,89 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Community Filters */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Filter by Community
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {communities.map(community => (
-                  <button
-                    key={community.id}
-                    onClick={() => toggleCommunity(community.id)}
-                    className={`px-3 py-2 text-xs rounded-full border transition-colors ${
-                      searchParams.communities.includes(community.id)
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <MapPin className="w-3 h-3 inline mr-1" />
-                    {community.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Search Button */}
-            <button
-              onClick={searchAvailability}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </>
-              )}
-            </button>
+            <div className="flex items-end">
+              <button
+                onClick={searchAvailability}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Community Filters */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filter by Community (Optional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {communities.map(community => (
+                <button
+                  key={community.id}
+                  onClick={() => toggleCommunity(community.id)}
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    searchParams.communities.includes(community.id)
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <MapPin className="w-3 h-3 inline mr-1" />
+                  {community.name} ({community.area})
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
             {error}
           </div>
         )}
 
-        {/* Search Results */}
+        {/* Search Results - only show after search is performed AND results exist */}
         {hasSearched && availability.length > 0 && lastSearchParams && (
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Available Properties ({availability.length})
             </h2>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availability.map((unit, index) => (
-                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
                   <img 
                     src={getPropertyImage(unit.inventoryTypeId)} 
                     alt={unit.inventoryTypeName}
                     className="w-full h-48 object-cover"
                   />
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{unit.buildingName}</h3>
-                    <p className="text-gray-600 mb-3 text-sm">{unit.inventoryTypeName}</p>
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
+                    <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
                     
                     <div className="space-y-3">
                       {unit.rates.map((rate, rateIndex) => (
                         <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1">
-                              <div className="text-xs text-gray-600 space-y-1">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <div className="text-sm text-gray-600">
                                 <div><span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams.startDate)}</div>
                                 <div><span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams.endDate)}</div>
-                                <div className="text-gray-500">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</div>
                               </div>
+                              <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
                             </div>
-                            <div className="text-right ml-3">
+                            <div className="text-right">
                               <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-sm text-gray-500">
                                 {formatCurrency(rate.avgNightlyRate)}/night
                               </p>
                               <p className="text-xs text-gray-500">(VAT incl.)</p>
@@ -1010,7 +753,7 @@ const App: React.FC = () => {
                           </div>
                           <button
                             onClick={() => selectUnit(unit, rate)}
-                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
                           >
                             Select & Book
                           </button>
@@ -1024,14 +767,19 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* No results message */}
+        {/* No results message - only show when search completed successfully but no results */}
         {hasSearched && !loading && availability.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="text-gray-400 mb-4">
-              <Search className="w-12 h-12 mx-auto" />
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Available Properties (0)
+            </h2>
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <Search className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
-            <p className="text-gray-600 text-sm">Try adjusting your search criteria or dates.</p>
           </div>
         )}
       </div>
