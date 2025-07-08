@@ -688,10 +688,9 @@ const App: React.FC = () => {
                           <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h4 className="font-medium text-gray-900">{rate.rateName}</h4>
-                                <div className="text-sm text-gray-600 mt-1">
-                                  <div>{formatDateWithWeekday(searchParams.startDate)}</div>
-                                  <div>{formatDateWithWeekday(searchParams.endDate)}</div>
+                                <div className="text-sm text-gray-600">
+                                  <div><span className="font-medium">From:</span> {formatDateWithWeekday(searchParams.startDate)}</div>
+                                  <div><span className="font-medium">To:</span> {formatDateWithWeekday(searchParams.endDate)}</div>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
                                 {rate.description && (
