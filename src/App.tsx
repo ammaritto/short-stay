@@ -1,15 +1,4 @@
-// Format date for display (dd/mm/yyyy) - keep this for other uses
-  const formatDisplayDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return dateString;
-    }
-  };import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
 
@@ -71,7 +60,7 @@ interface BookingDetails {
 }
 
 const App: React.FC = () => {
-  // Existing state
+  // Main state
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
   const [guestDetails, setGuestDetails] = useState<GuestDetails>({
     firstName: '',
@@ -84,6 +73,9 @@ const App: React.FC = () => {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+
+  // Search state
   const [searchParams, setSearchParams] = useState<SearchParams>({
     startDate: '',
     endDate: '',
@@ -92,9 +84,7 @@ const App: React.FC = () => {
   });
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
-
-  // NEW: Payment flow state
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
   // Community data from the API
   const communities = [
@@ -165,17 +155,16 @@ const App: React.FC = () => {
     }
   };
 
-  // Toggle community filter
-  const toggleCommunity = (communityId: number): void => {
-    setSearchParams(prev => ({
-      ...prev,
-      communities: prev.communities.includes(communityId)
-        ? prev.communities.filter(id => id !== communityId)
-        : [...prev.communities, communityId]
-    }));
-    if (hasSearched) {
-      setAvailability([]);
-      setHasSearched(false);
+  // Format date for display (dd/mm/yyyy) - keep this for other uses
+  const formatDisplayDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return dateString;
     }
   };
 
@@ -204,6 +193,16 @@ const App: React.FC = () => {
       }
     }
   }, [searchParams.startDate]);
+
+  // Toggle community filter
+  const toggleCommunity = (communityId: number): void => {
+    setSearchParams(prev => ({
+      ...prev,
+      communities: prev.communities.includes(communityId)
+        ? prev.communities.filter(id => id !== communityId)
+        : [...prev.communities, communityId]
+    }));
+  };
 
   // Search for availability
   const searchAvailability = async (): Promise<void> => {
@@ -240,7 +239,7 @@ const App: React.FC = () => {
       console.log('Response data:', data);
       
       if (data.success && data.data) {
-        const searchNights = calculateNights(); // Calculate nights based on current search params
+        const searchNights = calculateNights();
         
         const transformedData = data.data.map((property: any) => {
           return {
@@ -250,7 +249,7 @@ const App: React.FC = () => {
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: (property.rates || []).map((rate: any) => {
               const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
-              const totalPrice = avgNightlyRate * searchNights; // Use searchNights instead of dynamic calculation
+              const totalPrice = avgNightlyRate * searchNights;
               
               return {
                 rateId: rate.rateId || 0,
@@ -259,7 +258,7 @@ const App: React.FC = () => {
                 currencySymbol: rate.currencySymbol || 'SEK',
                 totalPrice: totalPrice,
                 avgNightlyRate: avgNightlyRate,
-                nights: searchNights, // Store the nights from when search was performed
+                nights: searchNights,
                 description: rate.description || ''
               };
             })
@@ -267,7 +266,7 @@ const App: React.FC = () => {
         });
         
         setAvailability(transformedData);
-        setLastSearchParams({ ...searchParams }); // Store the search params that generated these results
+        setLastSearchParams({ ...searchParams });
         setHasSearched(true);
       } else {
         console.error('API returned error:', data);
@@ -293,7 +292,7 @@ const App: React.FC = () => {
     setShowBookingForm(true);
   };
 
-  // NEW: Handle guest details submission (now goes to payment)
+  // Handle guest details submission (now goes to payment)
   const handleGuestDetailsSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     
@@ -307,9 +306,9 @@ const App: React.FC = () => {
     setShowPaymentForm(true);
   };
 
-  // NEW: Handle payment submission
+  // Handle payment submission
   const handlePaymentSubmit = async (paymentDetails: PaymentDetails): Promise<void> => {
-    if (!selectedUnit) return;
+    if (!selectedUnit || !lastSearchParams) return;
 
     setLoading(true);
     setError('');
@@ -318,9 +317,9 @@ const App: React.FC = () => {
       const bookingData = {
         guestDetails,
         stayDetails: {
-          startDate: searchParams.startDate,
-          endDate: searchParams.endDate,
-          guests: searchParams.guests
+          startDate: lastSearchParams.startDate,
+          endDate: lastSearchParams.endDate,
+          guests: lastSearchParams.guests
         },
         unitDetails: {
           rateId: selectedUnit.selectedRate.rateId,
@@ -328,7 +327,7 @@ const App: React.FC = () => {
         },
         paymentDetails: {
           amount: selectedUnit.selectedRate.totalPrice,
-          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''), // Remove spaces
+          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''),
           cardholderName: paymentDetails.cardholderName,
           expiryMonth: paymentDetails.expiryMonth,
           expiryYear: paymentDetails.expiryYear,
@@ -364,7 +363,7 @@ const App: React.FC = () => {
     }
   };
 
-  // NEW: Handle back from payment form
+  // Handle back from payment form
   const handleBackFromPayment = (): void => {
     setShowPaymentForm(false);
     setShowBookingForm(true);
@@ -385,8 +384,8 @@ const App: React.FC = () => {
     setError('');
   };
 
-  // NEW: Show payment form
-  if (showPaymentForm && selectedUnit) {
+  // Show payment form
+  if (showPaymentForm && selectedUnit && lastSearchParams) {
     return (
       <PaymentForm
         totalAmount={selectedUnit.selectedRate.totalPrice}
@@ -396,10 +395,10 @@ const App: React.FC = () => {
         loading={loading}
         bookingDetails={{
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          checkIn: searchParams.startDate,
-          checkOut: searchParams.endDate,
+          checkIn: lastSearchParams.startDate,
+          checkOut: lastSearchParams.endDate,
           propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-          nights: calculateNights()
+          nights: selectedUnit.selectedRate.nights
         }}
       />
     );
@@ -436,7 +435,7 @@ const App: React.FC = () => {
   }
 
   // Guest details form (now as popup overlay)
-  if (showBookingForm && selectedUnit) {
+  if (showBookingForm && selectedUnit && lastSearchParams) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Background content (blurred) */}
@@ -462,6 +461,64 @@ const App: React.FC = () => {
                   <div className="p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
                     <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
+                    
+                    <div className="space-y-3">
+                      {unit.rates.map((rate, rateIndex) => (
+                        <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <div className="text-sm text-gray-600">
+                                <div><span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams.startDate)}</div>
+                                <div><span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams.endDate)}</div>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
+                              <p className="text-sm text-gray-500">
+                                {formatCurrency(rate.avgNightlyRate)}/night
+                              </p>
+                              <p className="text-xs text-gray-500">(VAT incl.)</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => selectUnit(unit, rate)}
+                            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                          >
+                            Select & Book
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* No results message - only show when search completed successfully but no results */}
+        {hasSearched && !loading && availability.length === 0 && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Available Properties (0)
+            </h2>
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="text-gray-400 mb-4">
+                <Search className="w-16 h-16 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+              <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default App;unit.buildingName}</h3>
+                    <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
                   </div>
                 </div>
               ))}
@@ -480,12 +537,12 @@ const App: React.FC = () => {
                 <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
                 <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">From:</span> {formatDateWithWeekday(searchParams.startDate)}
+                  <span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams.startDate)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">To:</span> {formatDateWithWeekday(searchParams.endDate)}
+                  <span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams.endDate)}
                 </p>
-                <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
+                <p className="text-sm text-gray-600">({selectedUnit.selectedRate.nights} nights)</p>
                 <p className="text-sm font-semibold text-gray-800 mt-2">
                   <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
                 </p>
@@ -715,72 +772,20 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Search Results */}
-        {hasSearched && (
+        {/* Search Results - only show after search is performed AND results exist */}
+        {hasSearched && availability.length > 0 && lastSearchParams && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Available Properties ({availability.length})
             </h2>
 
-            {availability.length === 0 ? (
-              <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <div className="text-gray-400 mb-4">
-                  <Search className="w-16 h-16 mx-auto" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
-                <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {availability.map((unit, index) => (
-                  <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <img 
-                      src={getPropertyImage(unit.inventoryTypeId)} 
-                      alt={unit.inventoryTypeName}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
-                      <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
-                      
-                      <div className="space-y-3">
-                        {unit.rates.map((rate, rateIndex) => (
-                          <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <div className="text-sm text-gray-600">
-                                  <div><span className="font-medium">From:</span> {formatDateWithWeekday(searchParams.startDate)}</div>
-                                  <div><span className="font-medium">To:</span> {formatDateWithWeekday(searchParams.endDate)}</div>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
-                                <p className="text-sm text-gray-500">
-                                  {formatCurrency(rate.avgNightlyRate)}/night
-                                </p>
-                                <p className="text-xs text-gray-500">(VAT incl.)</p>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => selectUnit(unit, rate)}
-                              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                            >
-                              Select & Book
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default App;
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {availability.map((unit, index) => (
+                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <img 
+                    src={getPropertyImage(unit.inventoryTypeId)} 
+                    alt={unit.inventoryTypeName}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{
