@@ -237,29 +237,29 @@ const App: React.FC = () => {
       console.log('Raw API response:', data);
       
       if (data.success && data.data) {
-  const transformedData = data.data.map((property: any) => {
-    return {
-      buildingId: property.buildingId || 0,
-      buildingName: property.buildingName || 'Unknown Building',
-      inventoryTypeId: property.inventoryTypeId || 0,
-      inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-      rates: (property.rates || []).map((rate: any) => ({
-        rateId: rate.rateId || 0,
-        rateName: rate.rateName || 'Rate',
-        currency: rate.currency || 'SEK',
-        currencySymbol: rate.currencySymbol || 'SEK',
-        totalPrice: parseFloat(rate.totalPrice) || 0,
-        avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
-        nights: parseInt(rate.nights) || calculateNights(),
-        description: rate.description || ''
-      }))
-    };
-  }).filter((property: any) => {
-    if (searchParams.communities.length > 0) {
-      return searchParams.communities.includes(property.buildingId);
-    }
-    return true;
-  });
+        const transformedData = data.data.map((property: any) => {
+          return {
+            buildingId: property.buildingId || 0,
+            buildingName: property.buildingName || 'Unknown Building',
+            inventoryTypeId: property.inventoryTypeId || 0,
+            inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
+            rates: (property.rates || []).map((rate: any) => ({
+              rateId: rate.rateId || 0,
+              rateName: rate.rateName || 'Rate',
+              currency: rate.currency || 'SEK',
+              currencySymbol: rate.currencySymbol || 'SEK',
+              totalPrice: parseFloat(rate.totalPrice) || 0,
+              avgNightlyRate: parseFloat(rate.avgNightlyRate) || 0,
+              nights: parseInt(rate.nights) || calculateNights(),
+              description: rate.description || ''
+            }))
+          };
+        }).filter((property: any) => {
+          if (searchParams.communities.length > 0) {
+            return searchParams.communities.includes(property.buildingId);
+          }
+          return true;
+        });
         
         console.log('Transformed data:', transformedData);
         setAvailability(transformedData);
@@ -447,36 +447,30 @@ const App: React.FC = () => {
                 </div>
               </div>
               
-<div className="w-full sm:col-span-2 md:col-span-1">
-  <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
-  <button
-    onClick={searchAvailability}
-    disabled={loading}
-    className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-75 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium relative overflow-hidden"
-  >
-    {/* Loading overlay with shimmer effect */}
-    {loading && (
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
-    )}
-    
-    {/* Search icon with spin animation when loading */}
-    <Search className={`h-5 w-5 transition-transform duration-300 ${loading ? 'animate-spin' : ''}`} />
-    
-    {/* Text with loading dots animation */}
-    {loading ? (
-      <span className="flex items-center gap-1">
-        Searching
-        <span className="flex gap-0.5">
-          <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-          <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-          <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-        </span>
-      </span>
-    ) : (
-      'Search'
-    )}
-  </button>
-</div>
+              <div className="w-full sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2 sm:invisible md:visible">Search</label>
+                <button
+                  onClick={searchAvailability}
+                  disabled={loading}
+                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:from-indigo-700 hover:to-indigo-800 disabled:opacity-75 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-base font-medium relative overflow-hidden"
+                >
+                  {/* Loading overlay with shimmer effect */}
+                  {loading && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                  )}
+                  
+                  {/* Search icon with spin animation when loading */}
+                  <Search className={`h-5 w-5 transition-transform duration-300 ${loading ? 'animate-spin' : ''}`} />
+                  
+                  {/* Text with loading dots animation */}
+                  {loading ? (
+                    'Searching'
+                  ) : (
+                    'Search'
+                  )}
+                </button>
+              </div>
+            </div>
             
             {/* Community Filter Buttons with better mobile spacing */}
             <div className="border-t border-gray-100 pt-6 md:pt-6">
@@ -710,7 +704,6 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
         </div>
       </div>
     </div>
