@@ -165,13 +165,31 @@ const App: React.FC = () => {
     }
   };
 
-  // Get minimum end date
+  // Get minimum end date (always 1 day after check-in)
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
     minDate.setDate(minDate.getDate() + 1);
     return minDate.toISOString().split('T')[0];
   };
+
+  // Auto-update checkout date when checkin changes
+  useEffect(() => {
+    if (searchParams.startDate) {
+      const checkIn = new Date(searchParams.startDate);
+      const checkOut = new Date(searchParams.endDate);
+      
+      // If checkout is not set or is not after checkin, set it to 1 day after checkin
+      if (!searchParams.endDate || checkOut <= checkIn) {
+        const newCheckOut = new Date(checkIn);
+        newCheckOut.setDate(newCheckOut.getDate() + 1);
+        setSearchParams(prev => ({
+          ...prev,
+          endDate: newCheckOut.toISOString().split('T')[0]
+        }));
+      }
+    }
+  }, [searchParams.startDate]);
 
   // Search for availability
   const searchAvailability = async (): Promise<void> => {
@@ -205,16 +223,22 @@ const App: React.FC = () => {
             buildingName: property.buildingName || 'Unknown Building',
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-            rates: (property.rates || []).map((rate: any) => ({
-              rateId: rate.rateId || 0,
-              rateName: rate.rateName || 'Standard Rate',
-              currency: rate.currency || 'SEK',
-              currencySymbol: rate.currencySymbol || 'SEK',
-              totalPrice: parseFloat(rate.totalPrice || '0'),
-              avgNightlyRate: parseFloat(rate.avgNightlyRate || '0'),
-              nights: rate.nights || calculateNights(),
-              description: rate.description || ''
-            }))
+            rates: (property.rates || []).map((rate: any) => {
+              const nights = calculateNights();
+              const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
+              const totalPrice = avgNightlyRate * nights; // Calculate total as nights x avg rate
+              
+              return {
+                rateId: rate.rateId || 0,
+                rateName: rate.rateName || 'Standard Rate',
+                currency: rate.currency || 'SEK',
+                currencySymbol: rate.currencySymbol || 'SEK',
+                totalPrice: totalPrice,
+                avgNightlyRate: avgNightlyRate,
+                nights: nights,
+                description: rate.description || ''
+              };
+            })
           };
         });
         
@@ -392,7 +416,7 @@ const App: React.FC = () => {
             <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
             <p className="text-sm text-gray-600">{selectedUnit.buildingName}</p>
             <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName}</p>
-            <p className="text-sm text-gray-600">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)}</p>
+            <p className="text-sm text-gray-600">{formatDisplayDate(searchParams.startDate)} - {formatDisplayDate(searchParams.endDate)} ({calculateNights()} nights)</p>
             <p className="text-sm font-semibold text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</p>
           </div>
 
@@ -654,6 +678,7 @@ const App: React.FC = () => {
                                 {rate.description && (
                                   <p className="text-sm text-gray-600">{rate.description}</p>
                                 )}
+                                <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
                               </div>
                               <div className="text-right">
                                 <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
