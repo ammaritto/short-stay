@@ -88,7 +88,7 @@ export const useSearchLogic = (
       });
       
       if (searchFormParams.communities.length > 0) {
-        params.append('communities', searchFormParams.communities.join(','));
+        params.append('buildings', searchFormParams.communities.join(','));
       }
       
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
