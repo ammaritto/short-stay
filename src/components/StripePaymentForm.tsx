@@ -136,13 +136,18 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [clientSecret, setClientSecret] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [paymentIntentCreated, setPaymentIntentCreated] = useState(false);
 
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 
   useEffect(() => {
+    // Prevent double creation in React StrictMode
+    if (paymentIntentCreated) return;
+    
     // Create payment intent
     const createPaymentIntent = async () => {
       try {
+        setPaymentIntentCreated(true);
         const response = await fetch(`${API_BASE_URL}/payment/create-intent`, {
           method: 'POST',
           headers: {
@@ -160,10 +165,12 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         if (data.success) {
           setClientSecret(data.clientSecret);
         } else {
+          setPaymentIntentCreated(false); // Reset on error so it can retry
           setError(data.error || 'Failed to initialize payment');
         }
       } catch (err) {
         console.error('Error creating payment intent:', err);
+        setPaymentIntentCreated(false); // Reset on error so it can retry
         setError('Failed to initialize payment. Please try again.');
       } finally {
         setLoading(false);
@@ -171,7 +178,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     };
 
     createPaymentIntent();
-  }, [totalAmount, currency, bookingDetails, API_BASE_URL]);
+  }, [totalAmount, currency, bookingDetails, API_BASE_URL, paymentIntentCreated]);
 
   const options = {
     clientSecret,
