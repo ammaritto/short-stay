@@ -674,7 +674,7 @@ const handleStripePaymentSuccess = async (paymentIntentId: string) => {
                   value={searchParams.guests}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                 >
-                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                  {[1, 2].map(num => (
                   ))}
                 </select>
               </div>
