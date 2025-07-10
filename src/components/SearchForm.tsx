@@ -76,7 +76,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               value={searchFormParams.guests}
               onChange={(e) => setSearchFormParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
             >
-              {[1, 2].map(num => (
+              {[1, 2, 3, 4, 5, 6].map(num => (
                 <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
               ))}
             </select>

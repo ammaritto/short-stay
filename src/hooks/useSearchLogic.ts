@@ -66,6 +66,9 @@ export const useSearchLogic = (
         ? prev.communities.filter(id => id !== communityId)
         : [...prev.communities, communityId]
     }));
+    // Reset search results when filters change
+    setAvailability([]);
+    setHasSearched(false);
   };
 
   const searchAvailability = async (): Promise<void> => {
@@ -88,7 +91,7 @@ export const useSearchLogic = (
       });
       
       if (searchFormParams.communities.length > 0) {
-        params.append('buildings', searchFormParams.communities.join(','));
+        params.append('communities', searchFormParams.communities.join(','));
       }
       
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
