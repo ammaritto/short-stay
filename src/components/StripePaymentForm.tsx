@@ -30,58 +30,14 @@ const CheckoutForm: React.FC<{
   onBack: () => void;
   totalAmount: number;
   currency: string;
-  bookingDetails: any;
-}> = ({ onPaymentSuccess, onBack, totalAmount, currency, bookingDetails }) => {
+}> = ({ onPaymentSuccess, onBack, totalAmount, currency }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string>('');
   const [processing, setProcessing] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentIntentCreated, setPaymentIntentCreated] = useState(false);
-
-  const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
-
-  const createPaymentIntent = async () => {
-    try {
-      setProcessing(true);
-      setError('');
-      
-      const response = await fetch(`${API_BASE_URL}/payment/create-intent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: currency,
-          bookingDetails: bookingDetails
-        }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setClientSecret(data.clientSecret);
-        setPaymentIntentCreated(true);
-      } else {
-        setError(data.error || 'Failed to initialize payment');
-        setProcessing(false);
-      }
-    } catch (err) {
-      console.error('Error creating payment intent:', err);
-      setError('Failed to initialize payment. Please try again.');
-      setProcessing(false);
-    }
-  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    // If payment intent hasn't been created yet, create it first
-    if (!paymentIntentCreated) {
-      await createPaymentIntent();
-      return;
-    }
 
     if (!stripe || !elements) {
       return;
@@ -118,20 +74,17 @@ const CheckoutForm: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Show PaymentElement only after payment intent is created */}
-      {paymentIntentCreated && clientSecret && (
-        <PaymentElement 
-          options={{
-            layout: 'tabs',
-            defaultValues: {
-              billingDetails: {
-                email: '',
-                phone: '',
-              }
+      <PaymentElement 
+        options={{
+          layout: 'tabs',
+          defaultValues: {
+            billingDetails: {
+              email: '',
+              phone: '',
             }
-          }}
-        />
-      )}
+          }
+        }}
+      />
       
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-start">
@@ -163,7 +116,7 @@ const CheckoutForm: React.FC<{
           {processing ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              {paymentIntentCreated ? 'Processing Payment...' : 'Initializing Payment...'}
+              Processing Payment...
             </div>
           ) : (
             `Pay ${formatCurrency(totalAmount)}`
@@ -181,6 +134,13 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   onBack,
   bookingDetails
 }) => {
+  const [clientSecret, setClientSecret] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+
+  const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -198,8 +158,41 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     });
   };
 
-  // Basic Stripe Elements options (no client secret needed initially)
-  const options = {
+  const handleInitiatePayment = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await fetch(`${API_BASE_URL}/payment/create-intent`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: totalAmount,
+          currency: currency,
+          bookingDetails: bookingDetails
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setClientSecret(data.clientSecret);
+        setShowPaymentForm(true);
+      } else {
+        setError(data.error || 'Failed to initialize payment');
+      }
+    } catch (err) {
+      console.error('Error creating payment intent:', err);
+      setError('Failed to initialize payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const options = clientSecret ? {
+    clientSecret,
     appearance: {
       theme: 'stripe' as const,
       variables: {
@@ -208,7 +201,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         borderRadius: '8px',
       },
     },
-  };
+  } : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -218,6 +211,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           <button
             onClick={onBack}
             className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+            disabled={loading}
           >
             <ArrowLeft className="w-5 h-5 mr-1" />
             Back
@@ -275,15 +269,49 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               <h2 className="text-xl font-semibold text-gray-900">Payment Details</h2>
             </div>
 
-            <Elements stripe={stripePromise} options={options}>
-              <CheckoutForm 
-                onPaymentSuccess={onPaymentSuccess}
-                onBack={onBack}
-                totalAmount={totalAmount}
-                currency={currency}
-                bookingDetails={bookingDetails}
-              />
-            </Elements>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4 flex items-start">
+                <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
+            {!showPaymentForm ? (
+              // Initial state - show "Proceed to Payment" button
+              <div className="space-y-4">
+                <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                  <Lock className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span>Your payment will be secured by Stripe</span>
+                </div>
+                
+                <button
+                  onClick={handleInitiatePayment}
+                  disabled={loading}
+                  className="w-full py-3 px-4 rounded-md font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Initializing Payment...
+                    </div>
+                  ) : (
+                    `Proceed to Payment - ${formatCurrency(totalAmount)}`
+                  )}
+                </button>
+              </div>
+            ) : (
+              // Payment form is shown after payment intent is created
+              clientSecret && options && (
+                <Elements stripe={stripePromise} options={options}>
+                  <CheckoutForm 
+                    onPaymentSuccess={onPaymentSuccess}
+                    onBack={onBack}
+                    totalAmount={totalAmount}
+                    currency={currency}
+                  />
+                </Elements>
+              )
+            )}
           </div>
         </div>
       </div>
