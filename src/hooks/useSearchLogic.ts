@@ -66,9 +66,6 @@ export const useSearchLogic = (
         ? prev.communities.filter(id => id !== communityId)
         : [...prev.communities, communityId]
     }));
-    // Reset search results when filters change
-    setAvailability([]);
-    setHasSearched(false);
   };
 
   const searchAvailability = async (): Promise<void> => {
