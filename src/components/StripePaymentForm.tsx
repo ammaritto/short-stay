@@ -137,7 +137,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     // Create payment intent
