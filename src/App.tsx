@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle } from 'lucide-react';
 import PaymentForm from './components/PaymentForm';
+import StripePaymentForm from './components/StripePaymentForm';
+
 
 // TypeScript interfaces
 interface SearchParams {
@@ -312,62 +314,76 @@ const App: React.FC = () => {
     setShowPaymentForm(true);
   };
 
-  // Handle payment submission
-  const handlePaymentSubmit = async (paymentDetails: PaymentDetails): Promise<void> => {
-    if (!selectedUnit || !lastSearchParams) return;
+  // Add state for payment method selection
+const [useStripePayment, setUseStripePayment] = useState(true);
 
+  // Updated handleStripePaymentSuccess function in App.tsx
+
+const handleStripePaymentSuccess = async (paymentIntentId: string) => {
+  try {
     setLoading(true);
-    setError('');
+    
+    const bookingData = {
+      guestDetails,
+      stayDetails: lastSearchParams!,
+      unitDetails: {
+        inventoryTypeId: selectedUnit!.inventoryTypeId,
+        rateId: selectedUnit!.selectedRate.rateId
+      },
+      paymentDetails: {
+        amount: selectedUnit!.selectedRate.totalPrice,
+        // For Stripe payments, we don't have actual card details
+        // Send dummy data that will be ignored by the backend
+        cardNumber: '4111111111111111',
+        cardholderName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+        expiryMonth: '12',
+        expiryYear: '2025',
+        cvv: '123',
+        // Optional: Include these to help the backend
+        cardType: 'VISA_CREDIT',
+        lastFour: '1111'
+      },
+      stripePaymentIntentId: paymentIntentId // This is the key addition
+    };
 
-    try {
-      const bookingData = {
-        guestDetails,
-        stayDetails: {
-          startDate: lastSearchParams.startDate, // FIXED: Use lastSearchParams
-          endDate: lastSearchParams.endDate,     // FIXED: Use lastSearchParams
-          guests: lastSearchParams.guests        // FIXED: Use lastSearchParams
-        },
-        unitDetails: {
-          rateId: selectedUnit.selectedRate.rateId,
-          inventoryTypeId: selectedUnit.inventoryTypeId
-        },
-        paymentDetails: {
-          amount: selectedUnit.selectedRate.totalPrice,
-          cardNumber: paymentDetails.cardNumber.replace(/\s/g, ''),
-          cardholderName: paymentDetails.cardholderName,
-          expiryMonth: paymentDetails.expiryMonth,
-          expiryYear: paymentDetails.expiryYear,
-          cvv: paymentDetails.cvv
-        }
-      };
+    console.log('Creating booking with Stripe payment:', {
+      paymentIntentId,
+      amount: selectedUnit!.selectedRate.totalPrice,
+      guestName: `${guestDetails.firstName} ${guestDetails.lastName}`
+    });
 
-      console.log('Creating booking with payment:', bookingData);
+    const response = await fetch(`${API_BASE_URL}/booking/create-with-payment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
 
-      const response = await fetch(`${API_BASE_URL}/booking/create-with-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
-      });
-
-      const data = await response.json();
+    const data = await response.json();
+    
+    if (data.success) {
+      setBookingDetails(data.data);
+      setBookingComplete(true);
+      setShowPaymentForm(false);
+      console.log('Booking created successfully with Stripe payment:', data.data.bookingId);
+    } else {
+      console.error('Booking creation failed:', data);
+      setError(data.message || 'Failed to create booking');
       
-      if (data.success) {
-        setBookingDetails(data.data);
-        setBookingComplete(true);
-        setShowPaymentForm(false);
-      } else {
-        console.error('Booking with payment failed:', data);
-        setError(data.message || 'Failed to process payment and create booking');
+      // If the Stripe payment succeeded but booking failed,
+      // you might want to show a special error message
+      if (data.stripePaymentSuccessful) {
+        setError('Payment was successful but booking creation failed. Please contact support with reference: ' + paymentIntentId);
       }
-    } catch (err) {
-      console.error('Payment error:', err);
-      setError('Failed to process payment');
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (err) {
+    console.error('Booking error:', err);
+    setError('Failed to create booking. If payment was processed, please contact support.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle back from payment form
   const handleBackFromPayment = (): void => {
@@ -391,24 +407,22 @@ const App: React.FC = () => {
   };
   // Show payment form
   if (showPaymentForm && selectedUnit && lastSearchParams) {
-    return (
-      <PaymentForm
+         return (
+             <StripePaymentForm
         totalAmount={selectedUnit.selectedRate.totalPrice}
         currency={selectedUnit.selectedRate.currency}
-        onPaymentSubmit={handlePaymentSubmit}
+        onPaymentSuccess={handleStripePaymentSuccess}
         onBack={handleBackFromPayment}
-        loading={loading}
         bookingDetails={{
           guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          checkIn: lastSearchParams.startDate,      // FIXED: Use lastSearchParams
-          checkOut: lastSearchParams.endDate,       // FIXED: Use lastSearchParams
+          checkIn: lastSearchParams.startDate,
+          checkOut: lastSearchParams.endDate,
           propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
           nights: selectedUnit.selectedRate.nights
         }}
       />
     );
   }
-
   // Booking confirmation screen
   if (bookingComplete) {
     return (
