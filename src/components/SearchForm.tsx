@@ -46,7 +46,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <input
                   type="date"
                   id="startDate"
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-800 font-medium bg-gray-50 hover:bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-800 font-medium"
                   value={searchParams.startDate}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
                   min={new Date().toISOString().split('T')[0]}
@@ -63,7 +63,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <input
                   type="date"
                   id="endDate"
-                  className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-800 font-medium bg-gray-50 hover:bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-800 font-medium"
                   value={searchParams.endDate}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
                   min={getMinEndDate()}
@@ -79,7 +79,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <Users className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
                 <select
                   id="guests"
-                  className="w-full pl-12 pr-8 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all duration-200 text-gray-800 font-medium bg-gray-50 hover:bg-white"
+                  className="w-full pl-12 pr-8 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all duration-200 text-gray-800 font-medium"
                   value={searchParams.guests}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                 >
@@ -95,7 +95,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               <button
                 onClick={onSearch}
                 disabled={loading}
-                className="w-full h-16 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl group"
+                className="w-full py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-md font-bold hover:scale-105 transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-xl group"
               >
                 {loading ? (
                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
