@@ -60,11 +60,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
                   min={new Date().toISOString().split('T')[0]}
                 />
-                {searchParams.startDate && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">
-                    {formatDateForDisplay(searchParams.startDate)}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -82,11 +77,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
                   min={getMinEndDate()}
                 />
-                {searchParams.endDate && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">
-                    {formatDateForDisplay(searchParams.endDate)}
-                  </div>
-                )}
               </div>
             </div>
 
