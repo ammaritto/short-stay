@@ -713,36 +713,11 @@ const App: React.FC = () => {
           <div className="container-modern">
             <div className="text-center mb-8 md:mb-16 animate-fade-in-up">
               <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
-                <span className="text-gradient-accent">Perfect</span> Matches
+                <span className="text-blue-600">Perfect</span> Matches
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
-                We found {availability.length} studio {availability.length === 1 ? 'type' : 'types'} 
-                for your dates in Stockholm
+                We found {availability.length} studio type{availability.length === 1 ? '' : 's'} for your dates in Stockholm
               </p>
-              
-              {/* Search summary */}
-              <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-6 md:mt-8 px-4">
-                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
-                  <span className="text-sm md:text-base text-gray-700 font-medium">
-                    <Calendar className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
-                    <span className="hidden sm:inline">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
-                    <span className="sm:hidden">{new Date(lastSearchParams.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                  </span>
-                </div>
-                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
-                  <span className="text-sm md:text-base text-gray-700 font-medium">
-                    <Calendar className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
-                    <span className="hidden sm:inline">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
-                    <span className="sm:hidden">{new Date(lastSearchParams.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-                  </span>
-                </div>
-                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
-                  <span className="text-sm md:text-base text-gray-700 font-medium">
-                    <Users className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
-                    {lastSearchParams.guests} {lastSearchParams.guests === 1 ? 'Guest' : 'Guests'}
-                  </span>
-                </div>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10 px-4">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Calendar, Users, Star, Heart, Wifi, Car, Coffee, Bath, Bed, CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface Rate {
   rateId: number;
@@ -43,88 +43,97 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   formatCurrency,
   formatDateWithWeekday
 }) => {
+  // Format date for card display (e.g., "Saturday 12 Jul 2025")
+  const formatCardDate = (dateString: string): { weekday: string; day: string; month: string; year: string } => {
+    const date = new Date(dateString);
+    return {
+      weekday: date.toLocaleDateString('en-US', { weekday: 'long' }),
+      day: date.getDate().toString(),
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      year: date.getFullYear().toString()
+    };
+  };
+
+  const startDate = formatCardDate(lastSearchParams.startDate);
+  const endDate = formatCardDate(lastSearchParams.endDate);
+
   return (
-    <div className="card-modern group relative overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100">
       {/* Image Section */}
-      <div className="relative h-64 md:h-80 overflow-hidden rounded-t-3xl">
+      <div className="relative h-64 overflow-hidden">
         <img 
           src={getPropertyImage(unit.inventoryTypeId)} 
           alt={unit.inventoryTypeName}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
         />
-        
-        {/* Image Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       </div>
 
       {/* Content Section */}
-      <div className="p-6 md:p-8">
+      <div className="p-6">
         {/* Header */}
-        <div className="mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {unit.buildingName}
-          </h3>
+        <div className="mb-4">
+          <div className="flex justify-between items-start mb-2">
+            <h3 className="text-xl font-bold text-gray-900">
+              {unit.buildingName}
+            </h3>
+            <div className="text-right">
+              <div className="text-lg font-bold text-gray-900">
+                {Math.round(unit.rates[0]?.avgNightlyRate || 0)} SEK
+              </div>
+              <div className="text-sm text-gray-500">per night</div>
+            </div>
+          </div>
           <p className="text-gray-600">{unit.inventoryTypeName}</p>
         </div>
         
         {/* Booking Details */}
         {unit.rates.map((rate, rateIndex) => (
-          <div key={`${rate.rateId}-${rateIndex}`} className="bg-gray-50 rounded-lg p-4 mb-4">
-            {/* Date and Guest Info */}
-            <div className="grid grid-cols-3 gap-4 text-center text-sm text-gray-600 mb-4">
-              <div>
-                <div className="font-medium text-gray-800">Saturday</div>
-                <div className="flex items-center justify-center">
-                  <Calendar className="w-3 h-3 mr-1 text-blue-500" />
-                  <span>{new Date(lastSearchParams.startDate).getDate()} {new Date(lastSearchParams.startDate).toLocaleDateString('en-US', { month: 'short' })}</span>
-                </div>
-                <div>{new Date(lastSearchParams.startDate).getFullYear()}</div>
+          <div key={`${rate.rateId}-${rateIndex}`} className="space-y-4">
+            {/* Date Display */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="text-center">
+                <div className="font-medium text-gray-800">{startDate.weekday} {startDate.day}</div>
+                <div className="text-gray-600">{startDate.month} {startDate.year}</div>
               </div>
               
-              <div className="flex items-center justify-center">
-                <span className="text-gray-400">→</span>
+              <div className="flex items-center px-4">
+                <ArrowRight className="w-4 h-4 text-gray-400" />
               </div>
               
-              <div>
-                <div className="font-medium text-gray-800">Sunday</div>
-                <div className="flex items-center justify-center">
-                  <Calendar className="w-3 h-3 mr-1 text-blue-500" />
-                  <span>{new Date(lastSearchParams.endDate).getDate()} {new Date(lastSearchParams.endDate).toLocaleDateString('en-US', { month: 'short' })}</span>
-                </div>
-                <div>{new Date(lastSearchParams.endDate).getFullYear()}</div>
+              <div className="text-center">
+                <div className="font-medium text-gray-800">{endDate.weekday} {endDate.day}</div>
+                <div className="text-gray-600">{endDate.month} {endDate.year}</div>
               </div>
             </div>
             
-            <div className="text-center text-sm text-gray-600 mb-4">
-              <div className="flex items-center justify-center">
-                <Users className="w-3 h-3 mr-1 text-blue-500" />
-                <span>{rate.nights} {rate.nights === 1 ? 'night' : 'nights'} • {lastSearchParams.guests} {lastSearchParams.guests === 1 ? 'guest' : 'guests'}</span>
-              </div>
+            {/* Duration and Guest Info */}
+            <div className="text-center text-sm text-gray-600">
+              {rate.nights} night{rate.nights !== 1 ? 's' : ''} • {lastSearchParams.guests} guest{lastSearchParams.guests !== 1 ? 's' : ''}
             </div>
             
             {/* Price and Book Button */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between pt-2">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">
+                <div className="text-3xl font-bold text-blue-600">
                   {Math.round(rate.totalPrice)}
                 </div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-lg font-bold text-blue-600">
                   SEK
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  total price<br/>(VAT included)
+                  total
                 </div>
               </div>
               
               <button
                 onClick={() => onSelectUnit(unit, rate)}
-                className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-3 px-6 rounded-2xl font-bold hover:scale-105 transition-all duration-300 flex items-center shadow-lg hover:shadow-xl group"
+                className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-3 px-6 rounded-xl font-bold hover:scale-105 transition-all duration-300 flex items-center shadow-md hover:shadow-lg group"
               >
-                Book<br/>This<br/>Stay
+                Book This Stay
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </button>
             </div>
-              </div>
+          </div>
         ))}
       </div>
     </div>
