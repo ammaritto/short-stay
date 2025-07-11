@@ -1,127 +1,114 @@
 import React from 'react';
-import { Search, Calendar, Users, MapPin } from 'lucide-react';
-import { SearchParams } from '../hooks/useBookingState';
+import { Search, Calendar, Users } from 'lucide-react';
+
+interface SearchParams {
+  startDate: string;
+  endDate: string;
+  guests: number;
+}
+
 
 interface SearchFormProps {
-  searchFormParams: SearchParams;
-  setSearchFormParams: (params: SearchParams | ((prev: SearchParams) => SearchParams)) => void;
+  searchParams: SearchParams;
+  setSearchParams: React.Dispatch<React.SetStateAction<SearchParams>>;
   onSearch: () => void;
   loading: boolean;
   getMinEndDate: () => string;
-  toggleCommunity: (communityId: number) => void;
 }
 
-const communities = [
-  { id: 13, name: "Ängby Aces", area: "Ängby" },
-  { id: 3, name: "Bromma Friends", area: "Bromma" }
-];
-
 const SearchForm: React.FC<SearchFormProps> = ({
-  searchFormParams,
-  setSearchFormParams,
+  searchParams,
+  setSearchParams,
   onSearch,
   loading,
-  getMinEndDate,
-  toggleCommunity
+  getMinEndDate
 }) => {
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {/* Check-in Date */}
-        <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Check-in Date
-          </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <input
-              type="date"
-              id="startDate"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchFormParams.startDate}
-              onChange={(e) => setSearchFormParams(prev => ({ ...prev, startDate: e.target.value }))}
-              min={new Date().toISOString().split('T')[0]}
-            />
+    <div className="py-12 bg-white" id="search-section">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            Find Your <span className="text-gradient-accent">Stay</span>
+          </h2>
+          <p className="text-lg text-gray-600">
+            Tell us when you're looking for a stay
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Check-in
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-500" />
+                <input
+                  type="date"
+                  id="startDate"
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchParams.startDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
+                Check-out
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-500" />
+                <input
+                  type="date"
+                  id="endDate"
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchParams.endDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
+                  min={getMinEndDate()}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
+                Guests
+              </label>
+              <div className="relative">
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-500" />
+                <select
+                  id="guests"
+                  className="w-full pl-10 pr-8 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                  value={searchParams.guests}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+                >
+                  {[1, 2, 3, 4, 5, 6].map(num => (
+                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+              <button
+                onClick={onSearch}
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-
-        {/* Check-out Date */}
-        <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
-            Check-out Date
-          </label>
-          <div className="relative">
-            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <input
-              type="date"
-              id="endDate"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchFormParams.endDate}
-              onChange={(e) => setSearchFormParams(prev => ({ ...prev, endDate: e.target.value }))}
-              min={getMinEndDate()}
-            />
-          </div>
-        </div>
-
-        {/* Guests */}
-        <div>
-          <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-1">
-            Guests
-          </label>
-          <div className="relative">
-            <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <select
-              id="guests"
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchFormParams.guests}
-              onChange={(e) => setSearchFormParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
-            >
-              {[1, 2, 3, 4, 5, 6].map(num => (
-                <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Search Button */}
-        <div className="flex items-end">
-          <button
-            onClick={onSearch}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors flex items-center justify-center"
-          >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <>
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Community Filters */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Filter by Community (Optional)
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {communities.map(community => (
-            <button
-              key={community.id}
-              onClick={() => toggleCommunity(community.id)}
-              className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                searchFormParams.communities.includes(community.id)
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <MapPin className="w-3 h-3 inline mr-1" />
-              {community.name} ({community.area})
-            </button>
-          ))}
         </div>
       </div>
     </div>
