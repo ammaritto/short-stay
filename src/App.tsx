@@ -709,7 +709,7 @@ const App: React.FC = () => {
 
       {/* Search Results */}
       {hasSearched && availability.length > 0 && lastSearchParams && (
-        <div ref={resultsSectionRef} className="section-spacing bg-gradient-to-br from-white to-blue-50/30">
+        <div ref={resultsSectionRef} className="section-spacing bg-gradient-to-br from-white via-blue-50/20 to-gray-50">
           <div className="container-modern">
             <div className="text-center mb-8 md:mb-16 animate-fade-in-up">
               <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
@@ -722,21 +722,21 @@ const App: React.FC = () => {
               
               {/* Search summary */}
               <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-6 md:mt-8 px-4">
-                <div className="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-full">
+                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
                   <span className="text-sm md:text-base text-gray-700 font-medium">
                     <Calendar className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
                     <span className="hidden sm:inline">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
                     <span className="sm:hidden">{new Date(lastSearchParams.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                   </span>
                 </div>
-                <div className="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-full">
+                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
                   <span className="text-sm md:text-base text-gray-700 font-medium">
                     <Calendar className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
                     <span className="hidden sm:inline">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
                     <span className="sm:hidden">{new Date(lastSearchParams.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                   </span>
                 </div>
-                <div className="glass-effect px-3 md:px-6 py-2 md:py-3 rounded-full">
+                <div className="glass-effect px-4 md:px-6 py-3 md:py-3 rounded-full shadow-md">
                   <span className="text-sm md:text-base text-gray-700 font-medium">
                     <Users className="w-3 h-3 md:w-4 md:h-4 inline mr-1 md:mr-2 text-blue-500" />
                     {lastSearchParams.guests} {lastSearchParams.guests === 1 ? 'Guest' : 'Guests'}
@@ -745,7 +745,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10 px-4">
               {availability.map((unit, index) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} 
                      className="animate-fade-in-up" 
@@ -767,29 +767,31 @@ const App: React.FC = () => {
 
       {/* No results message */}
       {hasSearched && !loading && availability.length === 0 && (
-        <div ref={resultsSectionRef} className="max-w-6xl mx-auto px-4 pb-16">
-          <div className="text-center mb-8 animate-fade-in">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <div ref={resultsSectionRef} className="section-spacing">
+          <div className="container-modern">
+            <div className="text-center mb-8 animate-fade-in">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               No Properties Found
             </h2>
           </div>
-          <div className="card-elegant p-12 text-center animate-slide-up">
-            <div className="text-gray-400 mb-6">
-              <Search className="w-24 h-24 mx-auto" />
+            <div className="card-elegant p-8 md:p-12 text-center animate-slide-up max-w-2xl mx-auto">
+              <div className="text-gray-400 mb-6">
+                <Search className="w-20 h-20 md:w-24 md:h-24 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
               No accommodations match your search
             </h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
               Try adjusting your dates, number of guests, or location filters to find available properties.
             </p>
-            <button
-              onClick={searchAvailability}
-              className="btn-primary"
-            >
-              <Search className="w-5 h-5 mr-2" />
-              Search Again
-            </button>
+              <button
+                onClick={searchAvailability}
+                className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto shadow-lg hover:shadow-xl group"
+              >
+                <Search className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
+                Search Again
+              </button>
+            </div>
           </div>
         </div>
       )}
