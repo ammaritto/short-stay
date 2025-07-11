@@ -125,8 +125,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
               </button>
             </div>
               </div>
-            </div>
-          </div>
         ))}
       </div>
     </div>
